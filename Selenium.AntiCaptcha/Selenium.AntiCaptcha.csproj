@@ -3,7 +3,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Version>1.11.0</Version>
+    <Version>1.12.0</Version>
     <Authors>RemarkableSolutions</Authors>
     <PackageProjectUrl>https://github.com/RemarkableSolutionsAdmin/Selenium.AntiCaptcha</PackageProjectUrl>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -12,12 +12,12 @@
     <Nullable>enable</Nullable>
     <Title>Selenium.AntiCaptcha</Title>
     <Description>Selenium extension methods for captcha solving using Anti-Captcha.com api</Description>
-    <Copyright>Copyright (c) Remarkable Solutions 2022</Copyright>
+    <Copyright>Copyright (c) Remarkable Solutions 2025</Copyright>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
     <PublishRepositoryUrl>True</PublishRepositoryUrl>
     <IncludeSymbols>True</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <PackageVersion>1.11.0</PackageVersion>
+    <PackageVersion>1.12.0</PackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AntiCaptchaApi.Net" Version="1.7.1" />
@@ -30,8 +30,4 @@
       <_Parameter1>Selenium.Anticaptcha.Tests</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
-<!--  <ItemGroup>-->
-<!--    <ProjectReference Include="..\Selenium.CaptchaIdentifier\Selenium.CaptchaIdentifier.csproj" />-->
-<!--    <ProjectReference Include="..\Selenium.FramesSearcher.Extensions\Selenium.FramesSearcher.Extensions.csproj" />-->
-<!--  </ItemGroup>-->
 </Project>
