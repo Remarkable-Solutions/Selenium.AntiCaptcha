@@ -1,0 +1,64 @@
+name: Publish Selenium.AntiCaptcha NuGet Package
+
+on:
+  push:
+    branches:
+      - main # Triggers on pushes to the main branch
+    tags:
+      - 'anticaptcha-v[0-9]+.[0-9]+.[0-9]+*' # Triggers on tags like anticaptcha-v1.0.0
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # Needed to check out the repository
+      packages: write # Needed to publish to GitHub Packages
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x' # Use the .NET version your project targets
+
+    - name: Restore dependencies
+      run: dotnet restore Selenium.AntiCaptcha/Selenium.AntiCaptcha.sln
+
+    - name: Build
+      run: dotnet build Selenium.AntiCaptcha/Selenium.AntiCaptcha.sln --configuration Release --no-restore
+
+    # Optional: Run tests
+    # - name: Test
+    #   run: dotnet test Selenium.AntiCaptcha/Selenium.AntiCaptcha.sln --configuration Release --no-build
+
+    - name: Determine Package Version
+      id: package_version
+      shell: bash
+      run: |
+        if [[ "${{ github.ref_type }}" == "tag" ]]; then
+          # Use the tag name, remove 'anticaptcha-v' prefix
+          VERSION="${{ github.ref_name }}"
+          VERSION=${VERSION#anticaptcha-v}
+          echo "Using tag version for Selenium.AntiCaptcha: $VERSION"
+        else
+          # Ensure the path to csproj is correct for Selenium.AntiCaptcha
+          VERSION_FROM_CSPROJ=$(grep '<Version>' Selenium.AntiCaptcha/Selenium.AntiCaptcha/Selenium.AntiCaptcha.csproj | sed -e 's/.*<Version>\(.*\)<\/Version>.*/\1/')
+          VERSION="${VERSION_FROM_CSPROJ}-ci-${{ github.run_number }}"
+          echo "Using CI version for main branch: $VERSION"
+        fi
+        echo "package_version=$VERSION" >> $GITHUB_OUTPUT
+        
+    - name: Pack NuGet package
+      # Ensure the path to csproj is correct for Selenium.AntiCaptcha
+      run: dotnet pack Selenium.AntiCaptcha/Selenium.AntiCaptcha/Selenium.AntiCaptcha.csproj --configuration Release --no-build -p:PackageVersion=${{ steps.package_version.outputs.package_version }} -o ./nuget-packages
+
+    - name: Publish NuGet package to NuGet.org
+      if: startsWith(github.ref, 'refs/tags/anticaptcha-v') # Only publish to NuGet.org for specific version tags
+      run: dotnet nuget push "./nuget-packages/Selenium.AntiCaptcha*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+    - name: Publish NuGet package to GitHub Packages
+      if: github.ref == 'refs/heads/main' # Only publish to GitHub Packages for pushes to main branch
+      run: dotnet nuget push "./nuget-packages/Selenium.AntiCaptcha*.nupkg" --api-key ${{ secrets.GITHUB_TOKEN }} --source "https://nuget.pkg.github.com/RemarkableSolutionsAdmin/index.json" --skip-duplicate

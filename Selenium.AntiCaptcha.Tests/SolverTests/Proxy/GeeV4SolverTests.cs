@@ -1,6 +1,6 @@
-﻿using Selenium.Anticaptcha.Tests.Core.SolverTestBases;
-using Selenium.CaptchaIdentifier.Enums;
-using Tests.Common.Core;
+﻿using Selenium.AntiCaptcha.Enums;
+using Selenium.Anticaptcha.Tests.Core;
+using Selenium.Anticaptcha.Tests.Core.SolverTestBases;
 using Xunit.Abstractions;
 
 namespace Selenium.Anticaptcha.Tests.SolverTests.Proxy;

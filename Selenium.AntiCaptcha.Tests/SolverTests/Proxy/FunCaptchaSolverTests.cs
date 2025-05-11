@@ -2,13 +2,11 @@ using AntiCaptchaApi.Net;
 using AntiCaptchaApi.Net.Models.Solutions;
 using AntiCaptchaApi.Net.Requests;
 using Newtonsoft.Json;
+using Selenium.AntiCaptcha.Enums;
 using Selenium.AntiCaptcha.Models;
-using Selenium.AntiCaptcha.Solvers;
+using Selenium.Anticaptcha.Tests.Config;
+using Selenium.Anticaptcha.Tests.Core;
 using Selenium.Anticaptcha.Tests.Core.SolverTestBases;
-using Selenium.CaptchaIdentifier.Enums;
-using Tests.Common.Config;
-using Tests.Common.Core;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Selenium.Anticaptcha.Tests.SolverTests.Proxy

@@ -1,7 +1,6 @@
 ﻿    using System.Diagnostics;
     using AntiCaptchaApi.Net;
 using AntiCaptchaApi.Net.Enums;
-using AntiCaptchaApi.Net.Models;
 using AntiCaptchaApi.Net.Models.Solutions;
 using AntiCaptchaApi.Net.Requests.Abstractions.Interfaces;
 using AntiCaptchaApi.Net.Responses;

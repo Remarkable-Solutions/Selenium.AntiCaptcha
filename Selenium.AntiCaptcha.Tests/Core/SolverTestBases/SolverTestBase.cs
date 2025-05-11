@@ -3,18 +3,13 @@ using System.Text;
 using AntiCaptchaApi.Net.Models.Solutions;
 using AntiCaptchaApi.Net.Responses;
 using AntiCaptchaApi.Net.Responses.Abstractions;
-using OpenQA.Selenium;
 using Selenium.AntiCaptcha;
+using Selenium.AntiCaptcha.Enums;
+using Selenium.AntiCaptcha.Extensions;
 using Selenium.AntiCaptcha.Models;
-using Selenium.CaptchaIdentifier.Enums;
-using Selenium.CaptchaIdentifier.Extensions;
-using Tests.Common;
-using Tests.Common.Config;
-using Tests.Common.Core;
-using Tests.Common.Core.Models;
-using Xunit;
+using Selenium.Anticaptcha.Tests.Config;
+using Selenium.Anticaptcha.Tests.Core.Models;
 using Xunit.Abstractions;
-using Xunit.Sdk;
 
 namespace Selenium.Anticaptcha.Tests.Core.SolverTestBases;
 
@@ -145,8 +140,7 @@ public abstract class SolverTestBase<TSolution> : WebDriverBasedTestBase
         // Assert.Contains($"\"{expectedCaptchaType.ToString()}\"", result.CreateTaskResponse.RawRequestPayload);
     }
 
-    private static string BuildErrorMessage<TSolution>(TaskResultResponse<TSolution> result) //TODO move somewhere else.
-        where TSolution : BaseSolution, new()
+    private static string BuildErrorMessage<TSolution>(TaskResultResponse<TSolution> result) where TSolution : BaseSolution, new()
     {
         var stringBuilder = new StringBuilder();
 
