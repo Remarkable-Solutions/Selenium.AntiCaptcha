@@ -66,4 +66,4 @@ jobs:
 
     - name: Publish NuGet package to GitHub Packages
       if: github.ref == 'refs/heads/main' # Only publish to GitHub Packages for pushes to main branch
-      run: dotnet nuget push "./nuget-packages/Selenium.AntiCaptcha*.nupkg" --api-key ${{ secrets.GITHUB_TOKEN }} --source "https://nuget.pkg.github.com/RemarkableSolutionsAdmin/index.json" --skip-duplicate
+      run: dotnet nuget push "./nuget-packages/Selenium.AntiCaptcha*.nupkg" --api-key ${{ secrets.GITHUB_TOKEN }} --source "https://nuget.pkg.github.com/Remarkable-Solutions/index.json" --skip-duplicate
