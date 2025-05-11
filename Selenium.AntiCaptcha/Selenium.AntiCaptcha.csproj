@@ -21,7 +21,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AntiCaptchaApi.Net" Version="1.7.1" />
-    <PackageReference Include="Selenium.FramesSearcher.Extensions" Version="1.6.0" />
+    <PackageReference Include="Selenium.FramesSearcher.Extensions" Version="1.7.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Selenium.WebDriver" Version="4.32.0" />
   </ItemGroup>
