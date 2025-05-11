@@ -1,10 +1,8 @@
 ﻿using AntiCaptchaApi.Net.Models.Solutions;
 using Selenium.AntiCaptcha;
+using Selenium.AntiCaptcha.Enums;
 using Selenium.AntiCaptcha.Models;
-using Selenium.CaptchaIdentifier.Enums;
-using Tests.Common;
-using Tests.Common.Core;
-using Xunit;
+using Selenium.Anticaptcha.Tests.Core;
 using Xunit.Abstractions;
 
 namespace Selenium.Anticaptcha.Tests.FunctionalityTests;

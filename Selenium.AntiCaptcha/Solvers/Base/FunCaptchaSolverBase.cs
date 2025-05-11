@@ -3,8 +3,8 @@ using AntiCaptchaApi.Net.Models.Solutions;
 using AntiCaptchaApi.Net.Requests.Abstractions.Interfaces;
 using Newtonsoft.Json;
 using OpenQA.Selenium;
+using Selenium.AntiCaptcha.Extensions;
 using Selenium.AntiCaptcha.Models;
-using Selenium.CaptchaIdentifier.Extensions;
 using Selenium.FramesSearcher.Extensions;
 
 namespace Selenium.AntiCaptcha.Solvers.Base;

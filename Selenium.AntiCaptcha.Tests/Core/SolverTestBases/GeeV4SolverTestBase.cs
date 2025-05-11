@@ -1,8 +1,6 @@
 ﻿using AntiCaptchaApi.Net.Models.Solutions;
 using OpenQA.Selenium;
-using Tests.Common.Config;
-using Tests.Common.Core;
-using Xunit;
+using Selenium.Anticaptcha.Tests.Config;
 using Xunit.Abstractions;
 
 namespace Selenium.Anticaptcha.Tests.Core.SolverTestBases;

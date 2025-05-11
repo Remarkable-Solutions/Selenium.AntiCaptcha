@@ -7,13 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Selenium.AntiCaptcha", "Sel
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Selenium.Anticaptcha.Tests", "Selenium.Anticaptcha.Tests\Selenium.Anticaptcha.Tests.csproj", "{AD96407F-550B-4BB0-AEF5-7953D6662D3B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Selenium.CaptchaIdentifier", "Selenium.CaptchaIdentifier\Selenium.CaptchaIdentifier.csproj", "{E01DED9E-98B4-4E80-8BE4-4BBCD5914ABD}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Selenium.FramesSearcher.Extensions", "Selenium.FramesSearcher.Extensions\Selenium.FramesSearcher.Extensions.csproj", "{E27E4F1A-52FF-43BF-85C2-F9A2C7764646}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Selenium.CaptchaIdentifier.Tests", "Selenium.CaptchaIdentifier.Tests\Selenium.CaptchaIdentifier.Tests.csproj", "{1A915922-D6EA-4EF1-A375-89FEC016E19D}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Common", "Tests.Common\Tests.Common.csproj", "{39FB192F-DF52-4F41-8174-4AAD4E4623B1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,22 +23,10 @@ Global
 		{AD96407F-550B-4BB0-AEF5-7953D6662D3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AD96407F-550B-4BB0-AEF5-7953D6662D3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AD96407F-550B-4BB0-AEF5-7953D6662D3B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E01DED9E-98B4-4E80-8BE4-4BBCD5914ABD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E01DED9E-98B4-4E80-8BE4-4BBCD5914ABD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E01DED9E-98B4-4E80-8BE4-4BBCD5914ABD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E01DED9E-98B4-4E80-8BE4-4BBCD5914ABD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E27E4F1A-52FF-43BF-85C2-F9A2C7764646}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E27E4F1A-52FF-43BF-85C2-F9A2C7764646}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E27E4F1A-52FF-43BF-85C2-F9A2C7764646}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E27E4F1A-52FF-43BF-85C2-F9A2C7764646}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1A915922-D6EA-4EF1-A375-89FEC016E19D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1A915922-D6EA-4EF1-A375-89FEC016E19D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1A915922-D6EA-4EF1-A375-89FEC016E19D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1A915922-D6EA-4EF1-A375-89FEC016E19D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{39FB192F-DF52-4F41-8174-4AAD4E4623B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{39FB192F-DF52-4F41-8174-4AAD4E4623B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{39FB192F-DF52-4F41-8174-4AAD4E4623B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{39FB192F-DF52-4F41-8174-4AAD4E4623B1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

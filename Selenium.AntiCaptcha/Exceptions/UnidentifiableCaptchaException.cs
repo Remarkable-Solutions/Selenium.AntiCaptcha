@@ -1,4 +1,4 @@
-﻿using Selenium.CaptchaIdentifier.Enums;
+﻿using Selenium.AntiCaptcha.Enums;
 
 namespace Selenium.AntiCaptcha.Exceptions;
 

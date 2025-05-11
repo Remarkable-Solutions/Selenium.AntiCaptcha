@@ -3,9 +3,7 @@ using AntiCaptchaApi.Net.Models;
 using AntiCaptchaApi.Net.Requests.Abstractions.Interfaces;
 using Newtonsoft.Json.Linq;
 using OpenQA.Selenium;
-using Selenium.CaptchaIdentifier.Enums;
-
-//using AntiCaptchaApi.Net.Requests.Abstractions.Interfaces;
+using Selenium.AntiCaptcha.Enums;
 
 namespace Selenium.AntiCaptcha.Models;
 
