@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main # Triggers on pushes to the main branch
+    paths:
+      - 'Selenium.AntiCaptcha/Selenium.AntiCaptcha/**'
+      - 'Selenium.AntiCaptcha/Selenium.AntiCaptcha.Tests/**'
+      - 'Selenium.AntiCaptcha/Selenium.AntiCaptcha.sln'
+      - '.github/workflows/publish-nuget.yml'
     tags:
       - 'anticaptcha-v[0-9]+.[0-9]+.[0-9]+*' # Triggers on tags like anticaptcha-v1.0.0
   workflow_dispatch: # Allows manual triggering
