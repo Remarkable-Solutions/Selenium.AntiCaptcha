@@ -5,7 +5,7 @@ VisualStudioVersion = 17.1.32421.90
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Selenium.AntiCaptcha", "Selenium.AntiCaptcha\Selenium.AntiCaptcha.csproj", "{D50D160B-7A6A-454C-B938-24E0D629801E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Selenium.Anticaptcha.Tests", "Selenium.Anticaptcha.Tests\Selenium.AntiCaptcha.Tests.csproj", "{AD96407F-550B-4BB0-AEF5-7953D6662D3B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Selenium.AntiCaptcha.Tests", "Selenium.AntiCaptcha.Tests\Selenium.AntiCaptcha.Tests.csproj", "{AD96407F-550B-4BB0-AEF5-7953D6662D3B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Selenium.FramesSearcher.Extensions", "Selenium.FramesSearcher.Extensions\Selenium.FramesSearcher.Extensions.csproj", "{E27E4F1A-52FF-43BF-85C2-F9A2C7764646}"
 EndProject
