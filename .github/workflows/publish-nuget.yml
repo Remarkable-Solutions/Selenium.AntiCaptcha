@@ -25,14 +25,14 @@ jobs:
         dotnet-version: '9.0.x' # Use the .NET version your project targets
 
     - name: Restore dependencies
-      run: dotnet restore Selenium.AntiCaptcha/Selenium.AntiCaptcha.sln
+      run: dotnet restore Selenium.AntiCaptcha.sln
 
     - name: Build
-      run: dotnet build Selenium.AntiCaptcha/Selenium.AntiCaptcha.sln --configuration Release --no-restore
+      run: dotnet build Selenium.AntiCaptcha.sln --configuration Release --no-restore
 
     # Optional: Run tests
     # - name: Test
-    #   run: dotnet test Selenium.AntiCaptcha/Selenium.AntiCaptcha.sln --configuration Release --no-build
+    #   run: dotnet test Selenium.AntiCaptcha.sln --configuration Release --no-build
 
     - name: Determine Package Version
       id: package_version
@@ -45,7 +45,7 @@ jobs:
           echo "Using tag version for Selenium.AntiCaptcha: $VERSION"
         else
           # Ensure the path to csproj is correct for Selenium.AntiCaptcha
-          VERSION_FROM_CSPROJ=$(grep '<Version>' Selenium.AntiCaptcha/Selenium.AntiCaptcha/Selenium.AntiCaptcha.csproj | sed -e 's/.*<Version>\(.*\)<\/Version>.*/\1/')
+          VERSION_FROM_CSPROJ=$(grep '<Version>' Selenium.AntiCaptcha/Selenium.AntiCaptcha.csproj | sed -e 's/.*<Version>\(.*\)<\/Version>.*/\1/')
           VERSION="${VERSION_FROM_CSPROJ}-ci-${{ github.run_number }}"
           echo "Using CI version for main branch: $VERSION"
         fi
@@ -53,7 +53,7 @@ jobs:
         
     - name: Pack NuGet package
       # Ensure the path to csproj is correct for Selenium.AntiCaptcha
-      run: dotnet pack Selenium.AntiCaptcha/Selenium.AntiCaptcha/Selenium.AntiCaptcha.csproj --configuration Release --no-build -p:PackageVersion=${{ steps.package_version.outputs.package_version }} -o ./nuget-packages
+      run: dotnet pack Selenium.AntiCaptcha/Selenium.AntiCaptcha.csproj --configuration Release --no-build -p:PackageVersion=${{ steps.package_version.outputs.package_version }} -o ./nuget-packages
 
     - name: Publish NuGet package to NuGet.org
       if: startsWith(github.ref, 'refs/tags/anticaptcha-v') # Only publish to NuGet.org for specific version tags

@@ -26,11 +26,11 @@ jobs:
 
     - name: Restore dependencies
       # This project is part of the Selenium.AntiCaptcha.sln
-      run: dotnet restore Selenium.AntiCaptcha/Selenium.AntiCaptcha.sln
+      run: dotnet restore Selenium.AntiCaptcha.sln
 
     - name: Build
       # Build the entire solution, which includes Selenium.FramesSearcher.Extensions
-      run: dotnet build Selenium.AntiCaptcha/Selenium.AntiCaptcha.sln --configuration Release --no-restore
+      run: dotnet build Selenium.AntiCaptcha.sln --configuration Release --no-restore
 
     # Optional: Run tests if there are specific tests for FramesSearcher.Extensions
     # - name: Test FramesSearcher.Extensions
@@ -47,7 +47,7 @@ jobs:
           echo "Using tag version for FramesSearcher.Extensions: $VERSION"
         else
           # Path to the Selenium.FramesSearcher.Extensions.csproj
-          VERSION_FROM_CSPROJ=$(grep '<Version>' Selenium.AntiCaptcha/Selenium.FramesSearcher.Extensions/Selenium.FramesSearcher.Extensions.csproj | sed -e 's/.*<Version>\(.*\)<\/Version>.*/\1/')
+          VERSION_FROM_CSPROJ=$(grep '<Version>' Selenium.FramesSearcher.Extensions/Selenium.FramesSearcher.Extensions.csproj | sed -e 's/.*<Version>\(.*\)<\/Version>.*/\1/')
           VERSION="${VERSION_FROM_CSPROJ}-ci-${{ github.run_number }}"
           echo "Using CI version for FramesSearcher.Extensions (main branch): $VERSION"
         fi
@@ -55,7 +55,7 @@ jobs:
         
     - name: Pack Selenium.FramesSearcher.Extensions NuGet package
       # Path to the Selenium.FramesSearcher.Extensions.csproj
-      run: dotnet pack Selenium.AntiCaptcha/Selenium.FramesSearcher.Extensions/Selenium.FramesSearcher.Extensions.csproj --configuration Release --no-build -p:PackageVersion=${{ steps.package_version_framessearcher.outputs.package_version }} -o ./nuget-packages
+      run: dotnet pack Selenium.FramesSearcher.Extensions/Selenium.FramesSearcher.Extensions.csproj --configuration Release --no-build -p:PackageVersion=${{ steps.package_version_framessearcher.outputs.package_version }} -o ./nuget-packages
 
     - name: Publish Selenium.FramesSearcher.Extensions to NuGet.org
       if: startsWith(github.ref, 'refs/tags/framessearcher-v') # Only publish to NuGet.org for specific version tags
