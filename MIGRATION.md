@@ -1,5 +1,47 @@
 # Migration Guide: Updating Selenium.AntiCaptcha
+# Migration Guide
 
+This guide helps you migrate from older versions of Selenium.AntiCaptcha to newer versions.
+
+## Migrating from v1.x to v2.x
+
+Version 2.x introduces several breaking changes and new features to improve usability and maintainability.
+
+### Breaking Changes
+
+1. **Unified API**
+   - The separate methods for different CAPTCHA types have been consolidated into a single `SolveCaptchaAsync` method
+   - You now need to specify the CAPTCHA type via the `SolverArguments` parameter
+
+2. **Namespace and Class Changes**
+   - Some classes have been moved to different namespaces
+   - The configuration model has been restructured
+
+3. **Default Behavior Changes**
+   - Auto-identification of CAPTCHA types is now the default behavior
+   - Timeouts and retry logic have been improved
+
+### Feature Additions
+
+1. **Support for New CAPTCHA Types**
+   - Added support for Turnstile CAPTCHA
+   - Added support for GeeTest v4
+   - Added support for Image to Coordinates
+
+2. **Performance Improvements**
+   - Site key caching
+   - More efficient frame scanning
+   - Reduced network overhead
+
+3. **Better Error Handling**
+   - Specific exception types for different error scenarios
+   - Retry mechanism with backoff strategy
+
+### Code Migration Examples
+
+#### Example 1: Basic ReCaptcha v2 Solving
+
+Before (v1.x):
 This guide outlines the steps to migrate your existing code to use the newer versions of `Selenium.AntiCaptcha` that leverage Dependency Injection (DI) for managing the `IAnticaptchaClient`. This change aligns with the underlying `AntiCaptchaApi.Net` library's approach to client management and API key configuration.
 
 ## Key Change Summary

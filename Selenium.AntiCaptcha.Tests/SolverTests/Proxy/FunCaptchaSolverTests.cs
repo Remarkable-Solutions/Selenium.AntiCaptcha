@@ -1,9 +1,7 @@
-using AntiCaptchaApi.Net;
 using AntiCaptchaApi.Net.Models.Solutions;
 using AntiCaptchaApi.Net.Requests;
 using Newtonsoft.Json;
 using Selenium.AntiCaptcha.Enums;
-using Selenium.AntiCaptcha.Models;
 using Selenium.Anticaptcha.Tests.Config;
 using Selenium.Anticaptcha.Tests.Core;
 using Selenium.Anticaptcha.Tests.Core.SolverTestBases;

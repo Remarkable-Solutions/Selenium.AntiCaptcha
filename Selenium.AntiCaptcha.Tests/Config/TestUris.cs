@@ -14,7 +14,6 @@ public static class TestUris
         Recaptcha.Uris()
             .Concat(FunCaptcha.Uris())
             .Concat(ImageToText.Uris())
-            .Concat(AntiGate.Uris())
             .Concat(GeeTest.Uris())
             .Concat(Turnstile.Uris());
 
@@ -156,15 +155,5 @@ public static class TestUris
         }
         public const string Wikipedia = "https://en.wikipedia.org/w/index.php?title=Special:CreateAccount&returnto=Main+Page";
         public const string DemoCaptcha = "https://democaptcha.com/demo-form-eng/image.html";
-    }
-
-    public static class AntiGate
-    {
-        public const CaptchaType Type = CaptchaType.AntiGate;                
-        public static IEnumerable<object[]> Uris()
-        {
-            yield return new object[] { new CaptchaUri(AntiCaptchaTuttorialAntiGate, Type) };
-        }
-        public const string AntiCaptchaTuttorialAntiGate = "https://anti-captcha.com/tutorials/v2-textarea";
     }
 }

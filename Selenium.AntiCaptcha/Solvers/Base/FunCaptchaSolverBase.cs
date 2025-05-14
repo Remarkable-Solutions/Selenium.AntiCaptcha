@@ -27,7 +27,6 @@ public abstract class FunCaptchaSolverBase<TRequest> : Solver<TRequest, FunCaptc
         };
     }
 
-
     private async Task<string?> AcquireFunCaptchaJsSubdomain()
     {
         var scriptSources = Driver.FindManyValuesByXPathAllFrames("src", "//script[contains(@src, 'arkose')]")

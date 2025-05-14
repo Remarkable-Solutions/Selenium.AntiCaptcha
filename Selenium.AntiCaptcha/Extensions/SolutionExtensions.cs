@@ -15,7 +15,6 @@ internal static class SolutionExtensions
             nameof(RecaptchaSolution) => CaptchaType.ReCaptchaV2Proxyless,
             nameof(ImageToTextSolution) => CaptchaType.ImageToText,
             nameof(ImageToCoordinatesSolution) => CaptchaType.ImageToCoordinates,
-            nameof(AntiGateSolution) => CaptchaType.AntiGate,
             nameof(FunCaptchaSolution) => CaptchaType.FunCaptchaProxyless,
             nameof(TurnstileSolution) => CaptchaType.TurnstileProxyless,
             _ => throw new ArgumentOutOfRangeException(solution.GetType().Name),

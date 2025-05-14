@@ -7,6 +7,15 @@ public class UnidentifiableCaptchaException : ArgumentException
     public UnidentifiableCaptchaException(IReadOnlyList<CaptchaType> identifiedCaptchaTypes) : base(GetExceptionMessage(identifiedCaptchaTypes))
     {
         
+    }        
+    public UnidentifiableCaptchaException(IReadOnlyList<CaptchaType> identifiedCaptchaTypes, string message) : base(GetExceptionMessage(identifiedCaptchaTypes))
+    {
+        
+    }    
+    
+    public UnidentifiableCaptchaException(string message) : base(message)
+    {
+        
     }
 
     private static string GetExceptionMessage(IReadOnlyList<CaptchaType> identifiedCaptchaTypes)

@@ -15,7 +15,6 @@ public enum CaptchaType
     GeeTestV3Proxyless,
     GeeTestV4,
     GeeTestV4Proxyless,
-    AntiGate,
     Turnstile,
     TurnstileProxyless,
     ImageToCoordinates

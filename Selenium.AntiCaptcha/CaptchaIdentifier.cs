@@ -14,7 +14,6 @@ public static class CaptchaIdentifier
         new GeeTestIdentifier(),
         new RecaptchaIdentifier(),
         new ImageToTextIdentifier(),
-        new AntiGateIdentifier(),
         new FunCaptchaIdentifier(),
         new TurnstileCaptchaIdentifier(),
         new ImageToCoordinatesIdentifier()

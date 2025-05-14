@@ -1,5 +1,4 @@
 ﻿using AntiCaptchaApi.Net.Models;
-
 namespace Selenium.AntiCaptcha.Models;
 
 public class SolverConfig : ClientConfig
@@ -16,4 +15,5 @@ public class SolverConfig : ClientConfig
     }
     public int PageLoadTimeoutMs { get; set; }
     public int DelayTimeBetweenElementValueRetrievalMs { get; set; }
+    public int SolvingTimeoutMs { get; set; } = 1800000;
 }

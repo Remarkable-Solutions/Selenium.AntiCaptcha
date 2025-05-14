@@ -24,7 +24,6 @@ public static class CaptchaTypeGroups
         CaptchaType.ImageToText,
         CaptchaType.GeeTestV3Proxyless,
         CaptchaType.GeeTestV4Proxyless,
-        CaptchaType.AntiGate,
         CaptchaType.TurnstileProxyless,
         CaptchaType.ImageToCoordinates
     };

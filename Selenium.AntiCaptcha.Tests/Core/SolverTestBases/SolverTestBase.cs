@@ -1,10 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Text;
-using AntiCaptchaApi.Net;
 using AntiCaptchaApi.Net.Models.Solutions;
 using AntiCaptchaApi.Net.Responses;
 using AntiCaptchaApi.Net.Responses.Abstractions;
-using Microsoft.Extensions.DependencyInjection;
 using Selenium.AntiCaptcha;
 using Selenium.AntiCaptcha.Enums;
 using Selenium.AntiCaptcha.Extensions;

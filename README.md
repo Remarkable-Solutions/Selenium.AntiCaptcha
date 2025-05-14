@@ -1,5 +1,33 @@
 # Selenium.AntiCaptcha
+# Selenium.AntiCaptcha
 
+A powerful .NET library that integrates Selenium WebDriver with Anti-Captcha.com's API to automatically solve various types of CAPTCHAs on web pages.
+
+[![NuGet](https://img.shields.io/nuget/v/Selenium.AntiCaptcha.svg)](https://www.nuget.org/packages/Selenium.AntiCaptcha/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+## Features
+
+- 🔍 **Automatic CAPTCHA detection** - Identifies CAPTCHAs on the page without manual configuration
+- 🛡️ **Multi-CAPTCHA support** - Works with ReCaptcha v2/v3, FunCaptcha, GeeTest, Turnstile, and more
+- 🔄 **Proxy support** - Works with or without proxies
+- 🚀 **Performance optimized** - Caches site keys and optimizes requests
+- ⚙️ **Highly configurable** - Customize timeouts, retries, and behavior
+- 🧩 **Easy integration** - Simple extension methods for Selenium WebDriver
+
+## Supported CAPTCHA Types
+
+- ReCaptcha v2 (with and without proxy)
+- ReCaptcha v2 Enterprise (with and without proxy)
+- ReCaptcha v3 (with and without proxy)
+- ReCaptcha v3 Enterprise
+- FunCaptcha (with and without proxy)
+- GeeTest v3/v4 (with and without proxy)
+- Image to Text captcha
+- Turnstile captcha (with and without proxy)
+- Image to Coordinates
+
+## Installation
 A .NET library designed to seamlessly integrate [Anti-Captcha.com](https://anti-captcha.com/) services with Selenium WebDriver, enabling automated solving of various captcha types during your web automation tasks.
 
 This library leverages the `AntiCaptchaApi.Net` library for communication with the Anti-Captcha API and provides convenient extension methods for `IWebDriver`.

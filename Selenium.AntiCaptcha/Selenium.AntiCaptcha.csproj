@@ -1,30 +1,43 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Version>2.0.0</Version>
+    <Version>2.1.0</Version>
     <Authors>RemarkableSolutions</Authors>
     <PackageProjectUrl>https://github.com/RemarkableSolutionsAdmin/Selenium.AntiCaptcha</PackageProjectUrl>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <RepositoryUrl>https://github.com/RemarkableSolutionsAdmin/Selenium.AntiCaptcha</RepositoryUrl>
-    <PackageTags>Selenium Anti-Captcha Anticaptcha captcha RemarkableSolutions Captcha Recaptcha GeeCaptcha RecaptchaV2</PackageTags>
+    <PackageTags>Selenium Anti-Captcha Anticaptcha captcha RemarkableSolutions Captcha Recaptcha GeeCaptcha RecaptchaV2 FunCaptcha GeeTest Turnstile</PackageTags>
     <Nullable>enable</Nullable>
     <Title>Selenium.AntiCaptcha</Title>
-    <Description>Selenium extension methods for captcha solving using Anti-Captcha.com api</Description>
+    <Description>Selenium extension methods for captcha solving using Anti-Captcha.com API. Supports ReCaptcha v2/v3, FunCaptcha, GeeTest, Image to Text, Turnstile and more.</Description>
     <Copyright>Copyright (c) Remarkable Solutions 2025</Copyright>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
     <PublishRepositoryUrl>True</PublishRepositoryUrl>
     <IncludeSymbols>True</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <PackageVersion>2.0.0</PackageVersion>
+    <PackageVersion>2.1.0</PackageVersion>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>
+      2.1.0: Added multi-targeting support for .NET 8.0-9.0, improved error handling, timeout support, and better documentation.
+      2.0.0: Initial release with support for multiple captcha types.
+    </PackageReleaseNotes>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="AntiCaptchaApi.Net" Version="2.1.0" />
-    <PackageReference Include="Selenium.FramesSearcher.Extensions" Version="1.7.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Selenium.WebDriver" Version="4.32.0" />
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="AntiCaptchaApi.Net" Version="2.1.1" />
+    <PackageReference Include="Selenium.FramesSearcher.Extensions" Version="1.8.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Selenium.WebDriver" Version="4.15.0" Condition="'$(TargetFramework)' != 'net9.0'" />
+    <PackageReference Include="Selenium.WebDriver" Version="4.32.0" Condition="'$(TargetFramework)' == 'net9.0'" />
+  </ItemGroup>
+  
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
       <_Parameter1>Selenium.Anticaptcha.Tests</_Parameter1>

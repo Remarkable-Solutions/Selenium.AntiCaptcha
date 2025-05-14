@@ -237,13 +237,6 @@ public class CaptchaIdentifierTests : WebDriverBasedTestBase
         {
             await TestIdentifier<ImageToTextSolution>(websiteUrl, expectedType, null);
         }
-        
-        [Theory]
-        [InlineData(TestUris.AntiGate.AntiCaptchaTuttorialAntiGate, CaptchaType.AntiGate)]
-        public async Task ShouldReturnProperAntiGateType_WithoutProxy(string websiteUrl, CaptchaType expectedType)
-        {
-            await TestIdentifier<AntiGateSolution>(websiteUrl, expectedType, null);
-        }
 
         public IdentificationWithSolutionTypeSpecified(WebDriverFixture fixture, ITestOutputHelper output) : base(fixture, output)
         {
