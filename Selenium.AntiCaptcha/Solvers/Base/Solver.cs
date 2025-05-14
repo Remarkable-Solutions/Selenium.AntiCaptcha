@@ -16,12 +16,13 @@ public abstract class Solver<TRequest, TSolution> : ISolver <TSolution>
     where TSolution: BaseSolution, new()
 {
     protected IWebDriver Driver;
-    private AnticaptchaClient _anticaptchaClient;
+    private IAnticaptchaClient _anticaptchaClient;
     public SolverConfig SolverConfig { get; protected set; }
     
-    protected Solver(string clientKey, IWebDriver driver, SolverConfig solverConfig)
+    protected Solver(IAnticaptchaClient anticaptchaClient, IWebDriver driver, SolverConfig solverConfig)
     {
-        Configure(driver, clientKey, solverConfig);
+        _anticaptchaClient = anticaptchaClient;
+        Configure(driver, solverConfig);
     }
     
     protected virtual string GetSiteKey()
@@ -112,11 +113,10 @@ public abstract class Solver<TRequest, TSolution> : ISolver <TSolution>
         return await SolveCaptchaAsync(request, new SolverArguments() ,actionArguments, cancellationToken);
     }
 
-    public void Configure(IWebDriver driver, string clientKey, SolverConfig solverConfig)
+    public void Configure(IWebDriver driver, SolverConfig solverConfig)
     {
         Driver = driver;
         SolverConfig = solverConfig;
-        _anticaptchaClient = new AnticaptchaClient(clientKey, solverConfig);
     }
 
     private static void AddCookies(IWebDriver driver, JObject? cookies, bool shouldClearCookies)

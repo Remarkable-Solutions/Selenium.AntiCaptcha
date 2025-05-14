@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using AntiCaptchaApi.Net;
+using Microsoft.Extensions.DependencyInjection;
 using OpenQA.Selenium;
 using Selenium.Anticaptcha.Tests.Config;
 using Selenium.Anticaptcha.Tests.Core;
@@ -14,14 +16,19 @@ public abstract class WebDriverBasedTestBase : IClassFixture<WebDriverFixture>, 
     private const int MaxWaitingTimeInMilliseconds = 5000;
     private const int StepDelayTimeInMilliseconds = 500;
     private const string ResetWebsiteUri = "https://www.google.com/";
+    protected IAnticaptchaClient AnticaptchaClient;
+    protected readonly string ClientKey = TestEnvironment.ClientKey; // Keep for AddAnticaptcha
     
     protected WebDriverBasedTestBase(WebDriverFixture fixture, ITestOutputHelper output)
     {
         _fixture = fixture;
         _output = output;
+        
+        var services = new ServiceCollection();
+        services.AddAnticaptcha(ClientKey, config => { /* Optionally configure ClientConfig for tests */ });
+        var serviceProvider = services.BuildServiceProvider();
+        AnticaptchaClient = serviceProvider.GetRequiredService<IAnticaptchaClient>();
     }
-    
-    protected readonly string ClientKey = TestEnvironment.ClientKey;
     
     public virtual void Dispose()
     {

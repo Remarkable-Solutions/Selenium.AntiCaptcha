@@ -1,4 +1,5 @@
-﻿using AntiCaptchaApi.Net.Models.Solutions;
+﻿using AntiCaptchaApi.Net;
+using AntiCaptchaApi.Net.Models.Solutions;
 using Selenium.AntiCaptcha;
 using Selenium.AntiCaptcha.Enums;
 using Selenium.AntiCaptcha.Models;
@@ -13,7 +14,7 @@ public class WebDriverExtensionsTests : WebDriverBasedTestBase
     [Fact]
     public async Task ShouldThrowException_WhenSolutionTypeAndCaptchaTypeDoNotMatch()
     {
-        await Assert.ThrowsAsync<ArgumentException>(() => Driver.SolveCaptchaAsync<GeeTestV3Solution>(ClientKey, new SolverArguments(CaptchaType: CaptchaType.ReCaptchaV2)));
+        await Assert.ThrowsAsync<ArgumentException>(() => Driver.SolveCaptchaAsync<GeeTestV3Solution>(AnticaptchaClient, new SolverArguments(CaptchaType: CaptchaType.ReCaptchaV2)));
     }
 
 

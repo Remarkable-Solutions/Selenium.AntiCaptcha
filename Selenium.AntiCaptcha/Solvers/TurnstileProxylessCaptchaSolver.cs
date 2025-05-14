@@ -1,4 +1,5 @@
-﻿using AntiCaptchaApi.Net.Requests;
+﻿using AntiCaptchaApi.Net;
+using AntiCaptchaApi.Net.Requests;
 using AntiCaptchaApi.Net.Requests.Abstractions.Interfaces;
 using OpenQA.Selenium;
 using Selenium.AntiCaptcha.Models;
@@ -8,10 +9,10 @@ namespace Selenium.AntiCaptcha.Solvers
 {
     internal class TurnstileProxylessCaptchaSolver : TurnstileSolverBase <ITurnstileCaptchaProxylessRequest>
     {
-        protected override ITurnstileCaptchaProxylessRequest BuildRequest(SolverArguments arguments) => 
+        protected override ITurnstileCaptchaProxylessRequest BuildRequest(SolverArguments arguments) =>
             new TurnstileCaptchaProxylessRequest(arguments);
 
-        public TurnstileProxylessCaptchaSolver(string clientKey, IWebDriver driver, SolverConfig solverConfig) : base(clientKey, driver, solverConfig)
+        public TurnstileProxylessCaptchaSolver(IAnticaptchaClient anticaptchaClient, IWebDriver driver, SolverConfig solverConfig) : base(anticaptchaClient, driver, solverConfig)
         {
         }
     }

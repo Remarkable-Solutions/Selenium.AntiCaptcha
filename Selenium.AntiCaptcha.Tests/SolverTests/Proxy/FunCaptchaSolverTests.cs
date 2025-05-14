@@ -38,9 +38,10 @@ namespace Selenium.Anticaptcha.Tests.SolverTests.Proxy
                 ProxyConfig = TestEnvironment.GetCurrentTestProxyConfig()
             };
 
-            var antiCaptchaClient = new AnticaptchaClient(ClientKey, new DefaultSolverConfig(maxHttpRequestTimeMs: 300));
+            //
+            // var antiCaptchaClient = new AnticaptchaClient(ClientKey, new DefaultSolverConfig(maxHttpRequestTimeMs: 300));
 
-            var result = await antiCaptchaClient.SolveCaptchaAsync<FunCaptchaSolution>(request);
+            var result = await AnticaptchaClient.SolveCaptchaAsync<FunCaptchaSolution>(request);
             AssertSolveCaptchaResult(result, CaptchaType.FunCaptcha);
         }
 

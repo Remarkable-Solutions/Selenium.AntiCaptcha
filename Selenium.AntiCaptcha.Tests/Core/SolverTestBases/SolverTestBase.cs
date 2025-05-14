@@ -1,8 +1,10 @@
 ﻿using System.Diagnostics;
 using System.Text;
+using AntiCaptchaApi.Net;
 using AntiCaptchaApi.Net.Models.Solutions;
 using AntiCaptchaApi.Net.Responses;
 using AntiCaptchaApi.Net.Responses.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 using Selenium.AntiCaptcha;
 using Selenium.AntiCaptcha.Enums;
 using Selenium.AntiCaptcha.Extensions;
@@ -79,7 +81,7 @@ public abstract class SolverTestBase<TSolution> : WebDriverBasedTestBase
         DumpElapsedTimeToOutputAndRestartTimer(nameof(SetDriverUrl));
         await BeforeTestAction();
         DumpElapsedTimeToOutputAndRestartTimer(nameof(BeforeTestAction));
-        var result = await Driver.SolveCaptchaAsync<TSolution>(ClientKey, solverArguments,  solverConfig: new DefaultSolverConfig());
+        var result = await Driver.SolveCaptchaAsync<TSolution>(AnticaptchaClient, solverArguments,  solverConfig: new DefaultSolverConfig());
         DumpElapsedTimeToOutputAndRestartTimer("Generic - SolveCaptchaAsync");
         AssertSolveCaptchaResult(result, expectedCaptchaType: CaptchaType);
         DumpElapsedTimeToOutputAndRestartTimer(nameof(AssertSolveCaptchaResult));
@@ -100,7 +102,7 @@ public abstract class SolverTestBase<TSolution> : WebDriverBasedTestBase
         DumpElapsedTimeToOutputAndRestartTimer(nameof(SetDriverUrl));
         await BeforeTestAction();
         DumpElapsedTimeToOutputAndRestartTimer(nameof(BeforeTestAction));
-        var result = await Driver.SolveCaptchaAsync(ClientKey, solverArguments);
+        var result = await Driver.SolveCaptchaAsync(AnticaptchaClient, solverArguments);
         DumpElapsedTimeToOutputAndRestartTimer("NonGeneric - SolveCaptchaAsync");
         AssertSolveCaptchaResult(result, expectedCaptchaType: CaptchaType);
         DumpElapsedTimeToOutputAndRestartTimer(nameof(AssertSolveCaptchaResult));
@@ -182,8 +184,6 @@ public abstract class SolverTestBase<TSolution> : WebDriverBasedTestBase
             AssertSolveCaptchaResult((TaskResultResponse<GeeTestV3Solution>?)result, expectedCaptchaType);
         if (result is TaskResultResponse<GeeTestV4Solution>)
             AssertSolveCaptchaResult((TaskResultResponse<GeeTestV4Solution>?)result, expectedCaptchaType);
-        if (result is TaskResultResponse<AntiGateSolution>)
-            AssertSolveCaptchaResult((TaskResultResponse<AntiGateSolution>?)result, expectedCaptchaType);
         if (result is TaskResultResponse<ImageToTextSolution>)
             AssertSolveCaptchaResult((TaskResultResponse<ImageToTextSolution>?)result, expectedCaptchaType);
         if (result is TaskResultResponse<TurnstileSolution>)

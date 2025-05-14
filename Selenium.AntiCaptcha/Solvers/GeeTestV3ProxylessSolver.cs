@@ -1,4 +1,5 @@
-﻿using AntiCaptchaApi.Net.Requests;
+﻿using AntiCaptchaApi.Net;
+using AntiCaptchaApi.Net.Requests;
 using AntiCaptchaApi.Net.Requests.Abstractions.Interfaces;
 using OpenQA.Selenium;
 using Selenium.AntiCaptcha.Models;
@@ -13,7 +14,7 @@ namespace Selenium.AntiCaptcha.Solvers
             return new GeeTestV3ProxylessRequest(arguments);
         }
 
-        public GeeTestV3ProxylessSolver(string clientKey, IWebDriver driver, SolverConfig solverConfig) : base(clientKey, driver, solverConfig)
+        public GeeTestV3ProxylessSolver(IAnticaptchaClient anticaptchaClient, IWebDriver driver, SolverConfig solverConfig) : base(anticaptchaClient, driver, solverConfig)
         {
         }
     }

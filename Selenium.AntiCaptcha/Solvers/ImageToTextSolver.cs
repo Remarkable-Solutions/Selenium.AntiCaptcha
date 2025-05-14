@@ -1,4 +1,5 @@
-﻿using AntiCaptchaApi.Net.Models.Solutions;
+﻿using AntiCaptchaApi.Net;
+using AntiCaptchaApi.Net.Models.Solutions;
 using AntiCaptchaApi.Net.Requests;
 using OpenQA.Selenium;
 using Selenium.AntiCaptcha.Exceptions;
@@ -32,12 +33,12 @@ namespace Selenium.AntiCaptcha.Solvers
 
             if (string.IsNullOrEmpty(imageBody))
             {
-                throw new InsufficientSolverArgumentsException("Could not download the image from provided image element.");    
+                throw new InsufficientSolverArgumentsException("Could not download the image from provided image element.");
             }
             
             return new ImageToTextRequest
             {
-                BodyBase64 = imageBody,           
+                BodyBase64 = imageBody,
                 Phrase = arguments.Phrase,
                 Case = arguments.Case,
                 Numeric = arguments.Numeric,
@@ -59,7 +60,7 @@ namespace Selenium.AntiCaptcha.Solvers
 
             if (string.IsNullOrEmpty(possibleImageSource))
             {
-                throw new InsufficientSolverArgumentsException("No image found in the arguments. Please provide one.");    
+                throw new InsufficientSolverArgumentsException("No image found in the arguments. Please provide one.");
             }
 
             var imageWebElement =  Driver.FindByXPathAllFrames($"//img[@src='{possibleImageSource}']");
@@ -67,7 +68,7 @@ namespace Selenium.AntiCaptcha.Solvers
                 
             if (string.IsNullOrEmpty(bodyBase64))
             {
-                throw new InsufficientSolverArgumentsException("No image found in the arguments. Please provide one.");    
+                throw new InsufficientSolverArgumentsException("No image found in the arguments. Please provide one.");
             }
 
             return bodyBase64;
@@ -81,7 +82,7 @@ namespace Selenium.AntiCaptcha.Solvers
                 var responseElement = actionArguments.ResponseElement;
                 if (actionArguments.ShouldFindAndFillAccordingResponseElements)
                 {
-                    responseElement ??= Driver.FindElement(By.Name("captchaWord"));   
+                    responseElement ??= Driver.FindElement(By.Name("captchaWord"));
                 }
 
                 responseElement?.SendKeys(solution.Text);
@@ -92,7 +93,7 @@ namespace Selenium.AntiCaptcha.Solvers
             }
         }
 
-        public ImageToTextSolver(string clientKey, IWebDriver driver, SolverConfig solverConfig) : base(clientKey, driver, solverConfig)
+        public ImageToTextSolver(IAnticaptchaClient anticaptchaClient, IWebDriver driver, SolverConfig solverConfig) : base(anticaptchaClient, driver, solverConfig)
         {
         }
     }

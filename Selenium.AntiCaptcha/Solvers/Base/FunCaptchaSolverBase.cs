@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using AntiCaptchaApi.Net;
 using AntiCaptchaApi.Net.Models.Solutions;
 using AntiCaptchaApi.Net.Requests.Abstractions.Interfaces;
 using Newtonsoft.Json;
@@ -9,7 +10,7 @@ using Selenium.FramesSearcher.Extensions;
 
 namespace Selenium.AntiCaptcha.Solvers.Base;
 
-public abstract class FunCaptchaSolverBase<TRequest> : Solver<TRequest, FunCaptchaSolution> 
+public abstract class FunCaptchaSolverBase<TRequest> : Solver<TRequest, FunCaptchaSolution>
     where TRequest : ICaptchaRequest<FunCaptchaSolution>
 {
     protected override string GetSiteKey()
@@ -80,7 +81,7 @@ public abstract class FunCaptchaSolverBase<TRequest> : Solver<TRequest, FunCaptc
         else if(actionArguments.ShouldFindAndFillAccordingResponseElements)
         {
             try
-            {           
+            {
                 var recaptchaElementIds = Driver
                     .FindManyValuesByXPathAllFrames(
                         "id",
@@ -108,7 +109,7 @@ public abstract class FunCaptchaSolverBase<TRequest> : Solver<TRequest, FunCaptc
         }
     }
 
-    protected FunCaptchaSolverBase(string clientKey, IWebDriver driver, SolverConfig solverConfig) : base(clientKey, driver, solverConfig)
+    protected FunCaptchaSolverBase(IAnticaptchaClient anticaptchaClient, IWebDriver driver, SolverConfig solverConfig) : base(anticaptchaClient, driver, solverConfig)
     {
     }
 }

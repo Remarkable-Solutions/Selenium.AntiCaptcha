@@ -1,4 +1,5 @@
-﻿using AntiCaptchaApi.Net.Requests;
+﻿using AntiCaptchaApi.Net;
+using AntiCaptchaApi.Net.Requests;
 using AntiCaptchaApi.Net.Requests.Abstractions.Interfaces;
 using OpenQA.Selenium;
 using Selenium.AntiCaptcha.Models;
@@ -13,7 +14,7 @@ namespace Selenium.AntiCaptcha.Solvers
             return new RecaptchaV2EnterpriseRequest(arguments);
         }
 
-        public ReCaptchaV2EnterpriseSolver(string clientKey, IWebDriver driver, SolverConfig solverConfig) : base(clientKey, driver, solverConfig)
+        public ReCaptchaV2EnterpriseSolver(IAnticaptchaClient anticaptchaClient, IWebDriver driver, SolverConfig solverConfig) : base(anticaptchaClient, driver, solverConfig)
         {
         }
     }

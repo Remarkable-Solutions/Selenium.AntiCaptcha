@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using AntiCaptchaApi.Net;
 using AntiCaptchaApi.Net.Models.Solutions;
 using AntiCaptchaApi.Net.Requests.Abstractions.Interfaces;
 using OpenQA.Selenium;
@@ -11,7 +12,7 @@ public abstract class TurnstileSolverBase<TRequest> : Solver <TRequest, Turnstil
     where TRequest : ICaptchaRequest<TurnstileSolution>
 {
     
-    protected TurnstileSolverBase(string clientKey, IWebDriver driver, SolverConfig solverConfig) : base(clientKey, driver, solverConfig)
+    protected TurnstileSolverBase(IAnticaptchaClient anticaptchaClient, IWebDriver driver, SolverConfig solverConfig) : base(anticaptchaClient, driver, solverConfig)
     {
     }
     

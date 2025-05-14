@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using AntiCaptchaApi.Net;
 using AntiCaptchaApi.Net.Models.Solutions;
 using AntiCaptchaApi.Net.Requests.Abstractions.Interfaces;
 using OpenQA.Selenium;
@@ -47,7 +48,7 @@ internal abstract class RecaptchaSolverBase<TRequest> : Solver <TRequest, Recapt
         else if(actionArguments.ShouldFindAndFillAccordingResponseElements)
         {
             try
-            {           
+            {
                 var recaptchaElementIds = Driver
                     .FindManyValuesByXPathAllFrames(
                         "id",
@@ -75,7 +76,7 @@ internal abstract class RecaptchaSolverBase<TRequest> : Solver <TRequest, Recapt
         }
     }
 
-    protected RecaptchaSolverBase(string clientKey, IWebDriver driver, SolverConfig solverConfig) : base(clientKey, driver, solverConfig)
+    protected RecaptchaSolverBase(IAnticaptchaClient anticaptchaClient, IWebDriver driver, SolverConfig solverConfig) : base(anticaptchaClient, driver, solverConfig)
     {
     }
 }

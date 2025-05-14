@@ -11,7 +11,7 @@ public interface ISolver<TSolution> : ISolver
 {
     public Task<TaskResultResponse<TSolution>> SolveAsync(SolverArguments arguments, ActionArguments actionArguments,
         CancellationToken cancellationToken);
-    public void Configure(IWebDriver driver, string clientKey, SolverConfig solverConfig);
+    public void Configure(IWebDriver driver, SolverConfig solverConfig);
 }
 
 public interface ISolver { }

@@ -1,114 +1,184 @@
 # Selenium.AntiCaptcha
 
-### Selenium.AntiCaptcha is an extension library for Selenium Web Driver written in .NET 6. 
+A .NET library designed to seamlessly integrate [Anti-Captcha.com](https://anti-captcha.com/) services with Selenium WebDriver, enabling automated solving of various captcha types during your web automation tasks.
 
-Selenium.AntiCaptcha uses anti-captcha.com API to solve captchas. To use it you will need your ClientKey from anti-captcha service.
+This library leverages the `AntiCaptchaApi.Net` library for communication with the Anti-Captcha API and provides convenient extension methods for `IWebDriver`.
 
-## LICENSE
+## Features
 
-MIT - see LICENSE
+Supports a wide range of captcha types, including (but not limited to):
 
-## INFO
+*   ReCaptcha V2 (Normal and Invisible)
+*   ReCaptcha V2 Enterprise
+*   ReCaptcha V3
+*   FunCaptcha
+*   GeeTest (V3 and V4)
+*   ImageToText
+*   Turnstile
 
-### Adding AntiCaptchaApi.Net to your project
+## Installation
 
-Simply install the nuget package via
+1.  **Install via NuGet Package Manager:**
+    ```powershell
+    Install-Package Selenium.AntiCaptcha
+    ```
+    This will also install `AntiCaptchaApi.Net` as a dependency.
 
-`Install-Package Selenium.AntiCaptcha`
+## Configuration and Usage (Dependency Injection)
 
-### Contributing
+This library is designed to be used with .NET's built-in Dependency Injection (DI) system.
 
-1. Clone
-1. Branch
-1. Make changes
-1. Push
-1. Make a pull request
+**1. Register `IAnticaptchaClient`**
 
-### Source
-
-1. Clone the source down to your machine.
-   `git clone https://github.com/RemarkableSolutionsAdmin/Selenium.AntiCaptcha.git`
-   
-# REQUIREMENTS
-
-To run the build, a Visual Studio 2022 compatible environment should be setup.
-
-## Usage
-
-There are 2 main ways of using Selenium.AntiCaptcha:
-- Generic solution for known expected captcha type
-- Non-generic solving
-
-Although Selenium.AntiCaptcha is capable of identifying captchas and finding required elements on a website,  its better to provide as much information as possible to minimize chances of failure. 
-We recommend getting familiar with type **SolverAdditionalArguments**
-
-### Generic
-To use this method you have to know what type of captcha you will be solving. As result you will be given concrete type of solution.
+In your application's startup code (e.g., `Program.cs` for .NET 6+ or `Startup.cs` for older .NET Core versions), register the `IAnticaptchaClient` service provided by `AntiCaptchaApi.Net`:
 
 ```csharp
-        var solverAdditionalArguments = new SolverAdditionalArguments
-        {
-            CaptchaType = CaptchaType.HCaptchaProxyless,
-        };
-        var result = await Driver.SolveCaptchaAsync<HCaptchaSolution>(ClientKey, solverAdditionalArguments);
-```
-        
-     
-### Non-Generic
-More flexible approach. Identification of captchas might not always work
+// Program.cs (.NET 6+)
+using AntiCaptchaApi.Net.Extensions; // Required for AddAnticaptcha
 
-```csharp
-        var solverAdditionalArguments = new SolverAdditionalArguments
-        {
-            CaptchaType = CaptchaType.ImageToText,
-            ImageElement = Driver.FindElement(By.XPath("//img[contains(@class, 'captcha')]"))
-        };
-        
-        var result = await Driver.SolveCaptchaAsync(ClientKey, solverAdditionalArguments);
-```
+var builder = WebApplication.CreateBuilder(args);
 
-#### SolverAdditionalArguments
+// Add other services...
 
-```csharp
-public record SolverAdditionalArguments(
-    CaptchaType? CaptchaType = null,                //Provide it if you know what captcha to expect
-    string? Url = null,                             //The Url where you are trying to solve your captcha
-    string? SiteKey = null,                         //SiteKey should be unique per website. If you know what it is you can provide it explicitly otherwise it will be scrapped by captcha solver
-    IWebElement? ResponseElement = null,            //This elements has to be filled in before submitting form on a website. 
-    IWebElement? SubmitElement = null,              //Element used to submit your form
-    IWebElement? ImageElement = null,               //Element where picture for ImageToText captcha resides
-    string? UserAgent = null,
-    ProxyConfig? ProxyConfig = null,                //Used for captchas requiring Proxies
-    string? FunCaptchaApiJsSubdomain = null,
-    string? Data = null,
-    JObject? Variables = null,
-    string? TemplateName = null,
-    List<string>? DomainsOfInterest = null,
-    string? GeetestApiServerSubdomain = null,
-    string? GeetestGetLib = null,
-    string? Challenge = null,
-    string? Gt = null,                             //Gt is SiteKey for GeeTest captchas
-    Dictionary<string, string>? InitParameters = null,
-    double? MinScore = null,
-    string? PageAction = null,
-    string? ApiDomain = null,
-    bool? IsEnterprise = null,
-    bool? Phrase = null,
-    bool? Case = null,
-    NumericOption? Numeric = null,
-    int? Math = null,
-    int? MinLength = null,
-    int? MaxLength = null,
-    string? Comment = null,
-    string? ImageFilePath = null,
-    int MaxPageLoadWaitingTimeInMilliseconds = 5000,
-    bool? IsInvisible = null,
-    Dictionary<string, string>? EnterprisePayload = null,
-    int MaxTimeOutTimeInSeconds = 300)
+builder.Services.AddAnticaptcha("YOUR_ANTI_CAPTCHA_API_KEY", clientConfig =>
 {
+    // Optional: Configure ClientConfig properties if needed
+    // clientConfig.MaxHttpRequestTimeMs = 45000; 
+    // clientConfig.DefaultTimeout = TimeSpan.FromSeconds(120);
+});
+
+var app = builder.Build();
+
+// ...
+```
+
+Replace `"YOUR_ANTI_CAPTCHA_API_KEY"` with your actual API key from Anti-Captcha.com.
+
+**2. Inject `IAnticaptchaClient`**
+
+Inject the `IAnticaptchaClient` into any service where you need to solve captchas:
+
+```csharp
+using AntiCaptchaApi.Net;
+using OpenQA.Selenium;
+using Selenium.AntiCaptcha; // Required for IWebDriver extensions
+using Selenium.AntiCaptcha.Models;
+
+public class MyAutomatedTaskService
+{
+    private readonly IWebDriver _driver;
+    private readonly IAnticaptchaClient _anticaptchaClient;
+
+    public MyAutomatedTaskService(IWebDriver webDriver, IAnticaptchaClient anticaptchaClient)
+    {
+        _driver = webDriver;
+        _anticaptchaClient = anticaptchaClient;
+    }
+
+    public async Task PerformTaskWithCaptcha()
+    {
+        _driver.Navigate().GoToUrl("your_target_website_with_captcha");
+
+        // Prepare solver arguments
+        var solverArgs = new SolverArguments
+        {
+            WebsiteUrl = _driver.Url,
+            // WebsiteKey = "your_recaptcha_site_key", // If known, otherwise it might be auto-detected for some types
+            // CaptchaType = CaptchaType.ReCaptchaV2, // Specify if known, otherwise auto-detection will be attempted
+            // ProxyConfig = new ProxyConfig { /* ... if using a proxy for solving ... */ }
+        };
+        
+        var actionArgs = new ActionArguments
+        {
+            // Specify elements to interact with after solving, if needed
+            // ResponseElement = _driver.FindElement(By.Id("g-recaptcha-response")),
+            // SubmitElement = _driver.FindElement(By.Id("submit-button"))
+        };
+
+        try
+        {
+            // Call the SolveCaptchaAsync extension method
+            var solutionResponse = await _driver.SolveCaptchaAsync(_anticaptchaClient, solverArgs, actionArgs);
+
+            if (solutionResponse.ErrorId > 0)
+            {
+                Console.WriteLine($"Anti-Captcha Error: {solutionResponse.ErrorDescription}");
+                // Handle error
+            }
+            else
+            {
+                // For generic response, you might need to cast or check the specific solution type
+                // if (solutionResponse is TaskResultResponse<RecaptchaSolution> recaptchaSolution)
+                // {
+                //     Console.WriteLine($"Captcha solved! Token: {recaptchaSolution.Solution.GRecaptchaResponse}");
+                // }
+                Console.WriteLine("Captcha solved successfully (details depend on captcha type).");
+                // Proceed with automated task
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occurred: {ex.Message}");
+            // Handle exceptions (e.g., UnidentifiableCaptchaException, InsufficientSolverArgumentsException)
+        }
+    }
+    
+    // Example for a specific solution type
+    public async Task SolveReCaptchaV2Specifically()
+    {
+        _driver.Navigate().GoToUrl("your_recaptcha_v2_page");
+
+        var solverArgs = new SolverArguments(_driver.Url, "your_recaptcha_site_key", CaptchaType.ReCaptchaV2);
+        
+        var result = await _driver.SolveCaptchaAsync<AntiCaptchaApi.Net.Models.Solutions.RecaptchaSolution>(_anticaptchaClient, solverArgs);
+
+        if (result.ErrorId == 0)
+        {
+            Console.WriteLine($"ReCaptcha V2 solved! Token: {result.Solution.GRecaptchaResponse}");
+            // Use the token (e.g., set it in a hidden field)
+        }
+        else
+        {
+            Console.WriteLine($"Error solving ReCaptcha V2: {result.ErrorDescription}");
+        }
+    }
 }
 ```
 
-# CREDITS
+**3. Solver Arguments (`SolverArguments`)**
 
-Copyright (c) 2022 Remarkable Solutions
+The `SolverArguments` class allows you to provide necessary details for the captcha solving task:
+
+*   `CaptchaType` (optional): Explicitly specify the `Selenium.AntiCaptcha.Enums.CaptchaType`. If not provided, the library will attempt to identify it.
+*   `WebsiteUrl` (often required): The URL of the page where the captcha is present.
+*   `WebsiteKey` (often required for ReCaptcha, FunCaptcha, etc.): The site key associated with the captcha.
+*   `ImageElement` (for ImageToText): The `IWebElement` pointing to the captcha image.
+*   `ImageFilePath` (for ImageToText): Path to a local image file.
+*   `ProxyConfig` (optional): If the captcha needs to be solved using a specific proxy, configure it here.
+    *   `ProxyType`
+    *   `ProxyAddress`
+    *   `ProxyPort`
+    *   `ProxyLogin` (optional)
+    *   `ProxyPassword` (optional)
+*   Other captcha-specific parameters (e.g., `MinScoreForRecaptchaV3`, `GeeTestChallenge`, `FunCaptchaApiJsSubdomain`).
+
+**4. Action Arguments (`ActionArguments`)**
+
+The `ActionArguments` class allows you to specify Selenium elements to interact with after a successful solve:
+
+*   `ResponseElement`: An `IWebElement` (e.g., a textarea) where the captcha solution token should be placed.
+*   `SubmitElement`: An `IWebElement` (e.g., a submit button) to be clicked after the token is placed.
+*   `ShouldFindAndFillAccordingResponseElements`: If true, the library will attempt to find common response elements for certain captcha types.
+*   `ShouldResetCookiesBeforeAdd`: If true, cookies returned by Anti-Captcha (e.g., for AntiGate) will clear existing cookies before being added.
+
+## Migration from Older Versions
+
+If you were using a version of this library that accepted a `clientKey` string directly in the `SolveCaptchaAsync` methods, please see the [MIGRATION.md](MIGRATION.md) guide for details on updating your code.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit issues or pull requests.
+
+## License
+
+This project is licensed under the MIT License. See the LICENSE file for details.

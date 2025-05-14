@@ -1,4 +1,5 @@
-﻿using AntiCaptchaApi.Net.Models;
+﻿using AntiCaptchaApi.Net;
+using AntiCaptchaApi.Net.Models;
 using AntiCaptchaApi.Net.Models.Solutions;
 using AntiCaptchaApi.Net.Responses;
 using AntiCaptchaApi.Net.Responses.Abstractions;
@@ -13,7 +14,7 @@ namespace Selenium.AntiCaptcha
     public static class IWebDriverExtensions
     {
         public static async Task<BaseResponse> SolveCaptchaAsync(this IWebDriver driver,
-            string clientKey,
+            IAnticaptchaClient anticaptchaClient,
             SolverArguments? solverArguments = null,
             ActionArguments? actionArguments = null,
             SolverConfig? solverConfig = null,
@@ -21,7 +22,7 @@ namespace Selenium.AntiCaptcha
         {
             solverArguments ??= new SolverArguments();
             var captchaType = solverArguments.CaptchaType ?? await IdentifyCaptcha(driver, solverArguments, cancellationToken);
-            dynamic solver = SolverFactory.GetSolver(driver, clientKey, captchaType, solverConfig ?? new DefaultSolverConfig());
+            dynamic solver = SolverFactory.GetSolver(driver, anticaptchaClient, captchaType, solverConfig ?? new DefaultSolverConfig());
             return await solver.SolveAsync(solverArguments, actionArguments ?? new ActionArguments(), cancellationToken);
         }
 
@@ -37,7 +38,7 @@ namespace Selenium.AntiCaptcha
 
         public static async Task<TaskResultResponse<TSolution>> SolveCaptchaAsync<TSolution>(
             this IWebDriver driver,
-            string clientKey,
+            IAnticaptchaClient anticaptchaClient,
             SolverArguments? solverArguments = null,
             ActionArguments? actionArguments = null,
             SolverConfig? solverConfig = null,
@@ -52,7 +53,7 @@ namespace Selenium.AntiCaptcha
             }
 
             ValidateSolutionOutputToCaptchaType<TSolution>(captchaType.Value);
-            var solver = SolverFactory.GetSolver<TSolution>(driver, clientKey, captchaType.Value, solverConfig ?? new DefaultSolverConfig());
+            var solver = SolverFactory.GetSolver<TSolution>(driver, anticaptchaClient, captchaType.Value, solverConfig ?? new DefaultSolverConfig());
             return await solver.SolveAsync(solverArguments, actionArguments: actionArguments ?? new ActionArguments(), cancellationToken);
         }
 

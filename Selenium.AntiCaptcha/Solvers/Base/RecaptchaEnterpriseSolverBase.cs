@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using AntiCaptchaApi.Net;
 using AntiCaptchaApi.Net.Models.Solutions;
 using AntiCaptchaApi.Net.Requests.Abstractions.Interfaces;
 using OpenQA.Selenium;
@@ -11,7 +12,7 @@ internal abstract class RecaptchaEnterpriseSolverBase<TRequest> : RecaptchaSolve
     where TRequest : ICaptchaRequest<RecaptchaSolution>
 {
     private readonly string[] _reservedFieldNames = { "size", "theme" };
-    protected RecaptchaEnterpriseSolverBase(string clientKey, IWebDriver driver, SolverConfig solverConfig) : base(clientKey, driver, solverConfig)
+    protected RecaptchaEnterpriseSolverBase(IAnticaptchaClient anticaptchaClient, IWebDriver driver, SolverConfig solverConfig) : base(anticaptchaClient, driver, solverConfig)
     {
     }
 
