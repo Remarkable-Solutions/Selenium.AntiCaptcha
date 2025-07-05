@@ -13,7 +13,7 @@
         <Nullable>enable</Nullable>
         <Title>Selenium.FramesSearcher.Extensions</Title>
         <Description>Selenium IWebDriver Extensions to look for elements inside of iframes</Description>
-        <Copyright>Copyright (c) Remarkable Solutions 2024</Copyright>
+        <Copyright>Copyright (c) Remarkable Solutions 2025</Copyright>
         <AssemblyName>$(MSBuildProjectName)</AssemblyName>
         <PublishRepositoryUrl>True</PublishRepositoryUrl>
         <IncludeSymbols>True</IncludeSymbols>
