@@ -1,0 +1,277 @@
+name: Auto Update Dependencies and Release
+
+on:
+  repository_dispatch:
+    types: [dependency-update]
+  workflow_dispatch:
+    inputs:
+      package:
+        description: 'Package to update (AntiCaptchaApi.Net or Selenium.FramesSearcher.Extensions)'
+        required: true
+        type: choice
+        options:
+          - AntiCaptchaApi.Net
+          - Selenium.FramesSearcher.Extensions
+          - check-all
+      version:
+        description: 'Specific version to update to (leave empty for latest)'
+        required: false
+        type: string
+
+jobs:
+  update-dependencies:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.REPO_DISPATCH_PAT }}
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: Determine package to update
+      id: determine_package
+      shell: bash
+      run: |
+        if [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
+          PACKAGE="${{ github.event.client_payload.package }}"
+          VERSION="${{ github.event.client_payload.version }}"
+        else
+          PACKAGE="${{ inputs.package }}"
+          VERSION="${{ inputs.version }}"
+        fi
+        echo "package=$PACKAGE" >> $GITHUB_OUTPUT
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Updating package: $PACKAGE to version: ${VERSION:-latest}"
+
+    - name: Wait for NuGet package availability
+      if: steps.determine_package.outputs.package != 'check-all'
+      shell: bash
+      run: |
+        PACKAGE="${{ steps.determine_package.outputs.package }}"
+        VERSION="${{ steps.determine_package.outputs.version }}"
+        
+        if [[ -z "$VERSION" ]]; then
+          echo "No specific version provided, will use latest"
+          exit 0
+        fi
+        
+        echo "Waiting for $PACKAGE version $VERSION to be available on NuGet..."
+        
+        MAX_ATTEMPTS=30
+        ATTEMPT=0
+        
+        while [[ $ATTEMPT -lt $MAX_ATTEMPTS ]]; do
+          ATTEMPT=$((ATTEMPT + 1))
+          echo "Attempt $ATTEMPT of $MAX_ATTEMPTS..."
+          
+          # Check NuGet API for package version
+          RESPONSE=$(curl -s "https://api.nuget.org/v3-flatcontainer/${PACKAGE,,}/index.json" 2>/dev/null || echo "{}")
+          
+          if echo "$RESPONSE" | grep -q "\"$VERSION\""; then
+            echo "✅ Package $PACKAGE version $VERSION is now available on NuGet!"
+            exit 0
+          fi
+          
+          echo "Package not yet available, waiting 30 seconds..."
+          sleep 30
+        done
+        
+        echo "⚠️ Package $PACKAGE version $VERSION not found after $MAX_ATTEMPTS attempts"
+        echo "Continuing anyway - it might be available soon"
+
+    - name: Get current versions
+      id: current_versions
+      shell: bash
+      run: |
+        # Extract current versions from csproj files
+        ANTICAPTCHA_VERSION=$(grep '<PackageReference Include="AntiCaptchaApi.Net"' Selenium.AntiCaptcha/Selenium.AntiCaptcha.csproj | sed -E 's/.*Version="([^"]+)".*/\1/')
+        FRAMESSEARCHER_VERSION=$(grep '<PackageReference Include="Selenium.FramesSearcher.Extensions"' Selenium.AntiCaptcha/Selenium.AntiCaptcha.csproj | sed -E 's/.*Version="([^"]+)".*/\1/')
+        SELENIUM_ANTICAPTCHA_VERSION=$(grep '<Version>' Selenium.AntiCaptcha/Selenium.AntiCaptcha.csproj | head -1 | sed -E 's/.*<Version>([^<]+)<\/Version>.*/\1/')
+        FRAMES_EXT_VERSION=$(grep '<Version>' Selenium.FramesSearcher.Extensions/Selenium.FramesSearcher.Extensions.csproj | head -1 | sed -E 's/.*<Version>([^<]+)<\/Version>.*/\1/')
+        
+        echo "Current AntiCaptchaApi.Net reference: $ANTICAPTCHA_VERSION"
+        echo "Current Selenium.FramesSearcher.Extensions reference: $FRAMESSEARCHER_VERSION"
+        echo "Current Selenium.AntiCaptcha version: $SELENIUM_ANTICAPTCHA_VERSION"
+        echo "Current Selenium.FramesSearcher.Extensions version: $FRAMES_EXT_VERSION"
+        
+        echo "anticaptcha_ref=$ANTICAPTCHA_VERSION" >> $GITHUB_OUTPUT
+        echo "framessearcher_ref=$FRAMESSEARCHER_VERSION" >> $GITHUB_OUTPUT
+        echo "selenium_anticaptcha_ver=$SELENIUM_ANTICAPTCHA_VERSION" >> $GITHUB_OUTPUT
+        echo "frames_ext_ver=$FRAMES_EXT_VERSION" >> $GITHUB_OUTPUT
+
+    - name: Get latest versions from NuGet
+      id: latest_versions
+      shell: bash
+      run: |
+        # Get latest stable version from NuGet
+        get_latest_version() {
+          local package=$1
+          curl -s "https://api.nuget.org/v3-flatcontainer/${package,,}/index.json" | \
+            grep -oP '"\d+\.\d+\.\d+"' | \
+            tr -d '"' | \
+            sort -V | \
+            tail -1
+        }
+        
+        PACKAGE="${{ steps.determine_package.outputs.package }}"
+        VERSION="${{ steps.determine_package.outputs.version }}"
+        
+        if [[ "$PACKAGE" == "AntiCaptchaApi.Net" ]]; then
+          if [[ -n "$VERSION" ]]; then
+            LATEST_ANTICAPTCHA="$VERSION"
+          else
+            LATEST_ANTICAPTCHA=$(get_latest_version "AntiCaptchaApi.Net")
+          fi
+          LATEST_FRAMESSEARCHER="${{ steps.current_versions.outputs.framessearcher_ref }}"
+        elif [[ "$PACKAGE" == "Selenium.FramesSearcher.Extensions" ]]; then
+          LATEST_ANTICAPTCHA="${{ steps.current_versions.outputs.anticaptcha_ref }}"
+          if [[ -n "$VERSION" ]]; then
+            LATEST_FRAMESSEARCHER="$VERSION"
+          else
+            LATEST_FRAMESSEARCHER=$(get_latest_version "Selenium.FramesSearcher.Extensions")
+          fi
+        else
+          # check-all - get latest for both
+          LATEST_ANTICAPTCHA=$(get_latest_version "AntiCaptchaApi.Net")
+          LATEST_FRAMESSEARCHER=$(get_latest_version "Selenium.FramesSearcher.Extensions")
+        fi
+        
+        echo "Latest AntiCaptchaApi.Net: $LATEST_ANTICAPTCHA"
+        echo "Latest Selenium.FramesSearcher.Extensions: $LATEST_FRAMESSEARCHER"
+        
+        echo "anticaptcha=$LATEST_ANTICAPTCHA" >> $GITHUB_OUTPUT
+        echo "framessearcher=$LATEST_FRAMESSEARCHER" >> $GITHUB_OUTPUT
+
+    - name: Check for updates needed
+      id: check_updates
+      shell: bash
+      run: |
+        CURRENT_ANTICAPTCHA="${{ steps.current_versions.outputs.anticaptcha_ref }}"
+        CURRENT_FRAMESSEARCHER="${{ steps.current_versions.outputs.framessearcher_ref }}"
+        LATEST_ANTICAPTCHA="${{ steps.latest_versions.outputs.anticaptcha }}"
+        LATEST_FRAMESSEARCHER="${{ steps.latest_versions.outputs.framessearcher }}"
+        
+        UPDATES_NEEDED="false"
+        UPDATE_SUMMARY=""
+        
+        if [[ "$CURRENT_ANTICAPTCHA" != "$LATEST_ANTICAPTCHA" ]]; then
+          UPDATES_NEEDED="true"
+          UPDATE_SUMMARY="AntiCaptchaApi.Net $CURRENT_ANTICAPTCHA → $LATEST_ANTICAPTCHA"
+          echo "AntiCaptchaApi.Net needs update: $CURRENT_ANTICAPTCHA → $LATEST_ANTICAPTCHA"
+        fi
+        
+        if [[ "$CURRENT_FRAMESSEARCHER" != "$LATEST_FRAMESSEARCHER" ]]; then
+          UPDATES_NEEDED="true"
+          if [[ -n "$UPDATE_SUMMARY" ]]; then
+            UPDATE_SUMMARY="$UPDATE_SUMMARY, Selenium.FramesSearcher.Extensions $CURRENT_FRAMESSEARCHER → $LATEST_FRAMESSEARCHER"
+          else
+            UPDATE_SUMMARY="Selenium.FramesSearcher.Extensions $CURRENT_FRAMESSEARCHER → $LATEST_FRAMESSEARCHER"
+          fi
+          echo "Selenium.FramesSearcher.Extensions needs update: $CURRENT_FRAMESSEARCHER → $LATEST_FRAMESSEARCHER"
+        fi
+        
+        echo "updates_needed=$UPDATES_NEEDED" >> $GITHUB_OUTPUT
+        echo "update_summary=$UPDATE_SUMMARY" >> $GITHUB_OUTPUT
+
+    - name: Calculate new version
+      if: steps.check_updates.outputs.updates_needed == 'true'
+      id: new_version
+      shell: bash
+      run: |
+        CURRENT_VERSION="${{ steps.current_versions.outputs.selenium_anticaptcha_ver }}"
+        
+        # Increment patch version
+        IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+        NEW_PATCH=$((PATCH + 1))
+        NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+        
+        echo "Version bump: $CURRENT_VERSION → $NEW_VERSION"
+        echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+    - name: Update Selenium.AntiCaptcha.csproj
+      if: steps.check_updates.outputs.updates_needed == 'true'
+      shell: bash
+      run: |
+        CSPROJ_FILE="Selenium.AntiCaptcha/Selenium.AntiCaptcha.csproj"
+        NEW_VERSION="${{ steps.new_version.outputs.new_version }}"
+        LATEST_ANTICAPTCHA="${{ steps.latest_versions.outputs.anticaptcha }}"
+        LATEST_FRAMESSEARCHER="${{ steps.latest_versions.outputs.framessearcher }}"
+        UPDATE_SUMMARY="${{ steps.check_updates.outputs.update_summary }}"
+        
+        # Update Version and PackageVersion
+        sed -i "s/<Version>[^<]*<\/Version>/<Version>$NEW_VERSION<\/Version>/g" "$CSPROJ_FILE"
+        sed -i "s/<PackageVersion>[^<]*<\/PackageVersion>/<PackageVersion>$NEW_VERSION<\/PackageVersion>/g" "$CSPROJ_FILE"
+        
+        # Update package references
+        sed -i "s/\(<PackageReference Include=\"AntiCaptchaApi.Net\" Version=\"\)[^\"]*\"/\1$LATEST_ANTICAPTCHA\"/g" "$CSPROJ_FILE"
+        sed -i "s/\(<PackageReference Include=\"Selenium.FramesSearcher.Extensions\" Version=\"\)[^\"]*\"/\1$LATEST_FRAMESSEARCHER\"/g" "$CSPROJ_FILE"
+        
+        # Add release note at the beginning of PackageReleaseNotes
+        RELEASE_NOTE="$NEW_VERSION: Updated $UPDATE_SUMMARY"
+        sed -i "s/<PackageReleaseNotes>/<PackageReleaseNotes>\n      $RELEASE_NOTE/" "$CSPROJ_FILE"
+        
+        echo "Updated $CSPROJ_FILE"
+        cat "$CSPROJ_FILE"
+
+    - name: Verify build
+      if: steps.check_updates.outputs.updates_needed == 'true'
+      run: |
+        dotnet restore Selenium.AntiCaptcha.sln
+        dotnet build Selenium.AntiCaptcha.sln --configuration Release
+
+    - name: Commit and push changes
+      if: steps.check_updates.outputs.updates_needed == 'true'
+      shell: bash
+      run: |
+        NEW_VERSION="${{ steps.new_version.outputs.new_version }}"
+        UPDATE_SUMMARY="${{ steps.check_updates.outputs.update_summary }}"
+        
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        
+        git add -A
+        git commit -m "chore: update dependencies to $UPDATE_SUMMARY
+
+        Automated dependency update for Selenium.AntiCaptcha v$NEW_VERSION"
+        
+        git push origin main
+
+    - name: Create and push release tag
+      if: steps.check_updates.outputs.updates_needed == 'true'
+      shell: bash
+      run: |
+        NEW_VERSION="${{ steps.new_version.outputs.new_version }}"
+        TAG_NAME="anticaptcha-v$NEW_VERSION"
+        
+        git tag -a "$TAG_NAME" -m "Release Selenium.AntiCaptcha v$NEW_VERSION"
+        git push origin "$TAG_NAME"
+        
+        echo "✅ Created and pushed tag: $TAG_NAME"
+        echo "The publish-nuget.yml workflow will now publish the package to NuGet.org"
+
+    - name: Summary
+      shell: bash
+      run: |
+        if [[ "${{ steps.check_updates.outputs.updates_needed }}" == "true" ]]; then
+          echo "## ✅ Dependency Update Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Updates applied:** ${{ steps.check_updates.outputs.update_summary }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**New version:** ${{ steps.new_version.outputs.new_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Tag created:** anticaptcha-v${{ steps.new_version.outputs.new_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The publish workflow will now build and publish to NuGet.org." >> $GITHUB_STEP_SUMMARY
+        else
+          echo "## ℹ️ No Updates Needed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All dependencies are already up to date." >> $GITHUB_STEP_SUMMARY
+        fi

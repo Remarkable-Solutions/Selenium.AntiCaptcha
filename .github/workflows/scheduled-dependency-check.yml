@@ -1,0 +1,177 @@
+name: Scheduled Dependency Check
+
+on:
+  schedule:
+    # Run daily at 6:00 AM UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      update_selenium_webdriver:
+        description: 'Also check for Selenium.WebDriver updates'
+        type: boolean
+        default: true
+
+jobs:
+  check-framessearcher-dependencies:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      webdriver_updated: ${{ steps.update_webdriver.outputs.updated }}
+      new_version: ${{ steps.update_webdriver.outputs.new_version }}
+      
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.REPO_DISPATCH_PAT }}
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: Check Selenium.WebDriver updates for FramesSearcher.Extensions
+      id: check_webdriver
+      shell: bash
+      run: |
+        CSPROJ_FILE="Selenium.FramesSearcher.Extensions/Selenium.FramesSearcher.Extensions.csproj"
+        
+        # Get current version
+        CURRENT_WEBDRIVER=$(grep '<PackageReference Include="Selenium.WebDriver"' "$CSPROJ_FILE" | sed -E 's/.*Version="([^"]+)".*/\1/')
+        
+        # Get latest stable version from NuGet
+        LATEST_WEBDRIVER=$(curl -s "https://api.nuget.org/v3-flatcontainer/selenium.webdriver/index.json" | \
+          grep -oP '"\d+\.\d+\.\d+"' | \
+          tr -d '"' | \
+          sort -V | \
+          tail -1)
+        
+        echo "Current Selenium.WebDriver: $CURRENT_WEBDRIVER"
+        echo "Latest Selenium.WebDriver: $LATEST_WEBDRIVER"
+        
+        echo "current=$CURRENT_WEBDRIVER" >> $GITHUB_OUTPUT
+        echo "latest=$LATEST_WEBDRIVER" >> $GITHUB_OUTPUT
+        
+        if [[ "$CURRENT_WEBDRIVER" != "$LATEST_WEBDRIVER" ]]; then
+          echo "needs_update=true" >> $GITHUB_OUTPUT
+        else
+          echo "needs_update=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Get current FramesSearcher.Extensions version
+      if: steps.check_webdriver.outputs.needs_update == 'true'
+      id: current_version
+      shell: bash
+      run: |
+        VERSION=$(grep '<Version>' Selenium.FramesSearcher.Extensions/Selenium.FramesSearcher.Extensions.csproj | head -1 | sed -E 's/.*<Version>([^<]+)<\/Version>.*/\1/')
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Calculate new FramesSearcher.Extensions version
+      if: steps.check_webdriver.outputs.needs_update == 'true'
+      id: new_version
+      shell: bash
+      run: |
+        CURRENT="${{ steps.current_version.outputs.version }}"
+        IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+        NEW_PATCH=$((PATCH + 1))
+        NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+        echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+    - name: Update FramesSearcher.Extensions csproj
+      if: steps.check_webdriver.outputs.needs_update == 'true'
+      id: update_webdriver
+      shell: bash
+      run: |
+        CSPROJ_FILE="Selenium.FramesSearcher.Extensions/Selenium.FramesSearcher.Extensions.csproj"
+        NEW_VERSION="${{ steps.new_version.outputs.version }}"
+        LATEST_WEBDRIVER="${{ steps.check_webdriver.outputs.latest }}"
+        CURRENT_WEBDRIVER="${{ steps.check_webdriver.outputs.current }}"
+        
+        # Update Version and PackageVersion
+        sed -i "s/<Version>[^<]*<\/Version>/<Version>$NEW_VERSION<\/Version>/g" "$CSPROJ_FILE"
+        sed -i "s/<PackageVersion>[^<]*<\/PackageVersion>/<PackageVersion>$NEW_VERSION<\/PackageVersion>/g" "$CSPROJ_FILE"
+        
+        # Update Selenium.WebDriver reference
+        sed -i "s/\(<PackageReference Include=\"Selenium.WebDriver\" Version=\"\)[^\"]*\"/\1$LATEST_WEBDRIVER\"/g" "$CSPROJ_FILE"
+        
+        # Add release note
+        RELEASE_NOTE="$NEW_VERSION: Updated Selenium.WebDriver to $LATEST_WEBDRIVER"
+        sed -i "s/<PackageReleaseNotes>/<PackageReleaseNotes>\n            $RELEASE_NOTE/" "$CSPROJ_FILE"
+        
+        echo "updated=true" >> $GITHUB_OUTPUT
+        echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+        
+        echo "Updated FramesSearcher.Extensions to v$NEW_VERSION with Selenium.WebDriver $LATEST_WEBDRIVER"
+
+    - name: Verify FramesSearcher.Extensions build
+      if: steps.check_webdriver.outputs.needs_update == 'true'
+      run: |
+        dotnet restore Selenium.AntiCaptcha.sln
+        dotnet build Selenium.FramesSearcher.Extensions/Selenium.FramesSearcher.Extensions.csproj --configuration Release
+
+    - name: Commit FramesSearcher.Extensions changes
+      if: steps.check_webdriver.outputs.needs_update == 'true'
+      shell: bash
+      run: |
+        NEW_VERSION="${{ steps.new_version.outputs.version }}"
+        LATEST_WEBDRIVER="${{ steps.check_webdriver.outputs.latest }}"
+        
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        
+        git add Selenium.FramesSearcher.Extensions/Selenium.FramesSearcher.Extensions.csproj
+        git commit -m "chore: update Selenium.WebDriver to $LATEST_WEBDRIVER in FramesSearcher.Extensions
+
+        Automated dependency update for Selenium.FramesSearcher.Extensions v$NEW_VERSION"
+        
+        git push origin main
+
+    - name: Create and push FramesSearcher.Extensions tag
+      if: steps.check_webdriver.outputs.needs_update == 'true'
+      shell: bash
+      run: |
+        NEW_VERSION="${{ steps.new_version.outputs.version }}"
+        TAG_NAME="framessearcher-v$NEW_VERSION"
+        
+        git tag -a "$TAG_NAME" -m "Release Selenium.FramesSearcher.Extensions v$NEW_VERSION"
+        git push origin "$TAG_NAME"
+        
+        echo "✅ Created tag: $TAG_NAME"
+        echo "The publish-framessearcher-nuget.yml workflow will publish to NuGet.org"
+        echo "After that, auto-dependency-update.yml will be triggered to update Selenium.AntiCaptcha"
+
+    - name: Summary
+      shell: bash
+      run: |
+        if [[ "${{ steps.check_webdriver.outputs.needs_update }}" == "true" ]]; then
+          echo "## ✅ Selenium.WebDriver Update Applied" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Selenium.WebDriver:** ${{ steps.check_webdriver.outputs.current }} → ${{ steps.check_webdriver.outputs.latest }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**FramesSearcher.Extensions:** → v${{ steps.new_version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The publish workflow will now build and publish FramesSearcher.Extensions to NuGet.org." >> $GITHUB_STEP_SUMMARY
+          echo "After publishing, Selenium.AntiCaptcha will be automatically updated." >> $GITHUB_STEP_SUMMARY
+        else
+          echo "## ℹ️ No Selenium.WebDriver Updates" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Selenium.WebDriver is already at the latest version (${{ steps.check_webdriver.outputs.current }})." >> $GITHUB_STEP_SUMMARY
+        fi
+
+  # Also check for AntiCaptchaApi.Net updates (in case dispatch was missed)
+  check-anticaptcha-updates:
+    runs-on: ubuntu-latest
+    needs: [check-framessearcher-dependencies]
+    # Only run if FramesSearcher wasn't updated (to avoid conflicts)
+    if: needs.check-framessearcher-dependencies.outputs.webdriver_updated != 'true'
+    
+    steps:
+    - name: Trigger dependency check
+      uses: peter-evans/repository-dispatch@v3
+      with:
+        token: ${{ secrets.REPO_DISPATCH_PAT }}
+        repository: ${{ github.repository }}
+        event-type: dependency-update
+        client-payload: '{"package": "check-all", "version": ""}'
