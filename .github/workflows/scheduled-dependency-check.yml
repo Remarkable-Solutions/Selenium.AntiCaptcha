@@ -1,4 +1,4 @@
-name: Scheduled Dependency Check
+name: Scheduled Dependency Check (FramesSearcher.Extensions)
 
 on:
   schedule:
@@ -6,10 +6,10 @@ on:
     - cron: '0 6 * * *'
   workflow_dispatch:
     inputs:
-      update_selenium_webdriver:
-        description: 'Also check for Selenium.WebDriver updates'
+      dry_run:
+        description: 'Dry run - check for updates without committing or tagging'
         type: boolean
-        default: true
+        default: false
 
 jobs:
   check-framessearcher-dependencies:
@@ -112,7 +112,7 @@ jobs:
         dotnet build Selenium.FramesSearcher.Extensions/Selenium.FramesSearcher.Extensions.csproj --configuration Release
 
     - name: Commit FramesSearcher.Extensions changes
-      if: steps.check_webdriver.outputs.needs_update == 'true'
+      if: steps.check_webdriver.outputs.needs_update == 'true' && inputs.dry_run != true
       shell: bash
       run: |
         NEW_VERSION="${{ steps.new_version.outputs.version }}"
@@ -129,7 +129,7 @@ jobs:
         git push origin main
 
     - name: Create and push FramesSearcher.Extensions tag
-      if: steps.check_webdriver.outputs.needs_update == 'true'
+      if: steps.check_webdriver.outputs.needs_update == 'true' && inputs.dry_run != true
       shell: bash
       run: |
         NEW_VERSION="${{ steps.new_version.outputs.version }}"
@@ -145,15 +145,26 @@ jobs:
     - name: Summary
       shell: bash
       run: |
+        DRY_RUN="${{ inputs.dry_run }}"
         if [[ "${{ steps.check_webdriver.outputs.needs_update }}" == "true" ]]; then
-          echo "## ✅ Selenium.WebDriver Update Applied" >> $GITHUB_STEP_SUMMARY
+          if [[ "$DRY_RUN" == "true" ]]; then
+            echo "## 🧪 Dry Run - Selenium.WebDriver Update Available" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## ✅ Selenium.WebDriver Update Applied" >> $GITHUB_STEP_SUMMARY
+          fi
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Selenium.WebDriver:** ${{ steps.check_webdriver.outputs.current }} → ${{ steps.check_webdriver.outputs.latest }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**FramesSearcher.Extensions:** → v${{ steps.new_version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "The publish workflow will now build and publish FramesSearcher.Extensions to NuGet.org." >> $GITHUB_STEP_SUMMARY
-          echo "After publishing, Selenium.AntiCaptcha will be automatically updated." >> $GITHUB_STEP_SUMMARY
+          if [[ "$DRY_RUN" == "true" ]]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ **DRY RUN** - No changes were committed or tagged." >> $GITHUB_STEP_SUMMARY
+            echo "Run again without dry_run to apply changes." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "The publish workflow will now build and publish FramesSearcher.Extensions to NuGet.org." >> $GITHUB_STEP_SUMMARY
+            echo "After publishing, Selenium.AntiCaptcha will be automatically updated." >> $GITHUB_STEP_SUMMARY
+          fi
         else
           echo "## ℹ️ No Selenium.WebDriver Updates" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -164,8 +175,8 @@ jobs:
   check-anticaptcha-updates:
     runs-on: ubuntu-latest
     needs: [check-framessearcher-dependencies]
-    # Only run if FramesSearcher wasn't updated (to avoid conflicts)
-    if: needs.check-framessearcher-dependencies.outputs.webdriver_updated != 'true'
+    # Only run if FramesSearcher wasn't updated (to avoid conflicts) and not a dry run
+    if: needs.check-framessearcher-dependencies.outputs.webdriver_updated != 'true' && inputs.dry_run != true
     
     steps:
     - name: Trigger dependency check
