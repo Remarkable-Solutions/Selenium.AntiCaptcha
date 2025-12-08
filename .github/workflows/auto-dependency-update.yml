@@ -255,6 +255,12 @@ jobs:
         sed -i "s/\(<PackageReference Include=\"Selenium.FramesSearcher.Extensions\" Version=\"\)[^\"]*\"/\1$LATEST_FRAMESSEARCHER\"/g" "$CSPROJ_FILE"
         sed -i "s/\(<PackageReference Include=\"Selenium.WebDriver\" Version=\"\)[^\"]*\"/\1$LATEST_WEBDRIVER\"/g" "$CSPROJ_FILE"
         
+        # Also update Tests project to avoid version conflicts
+        TESTS_CSPROJ="Selenium.AntiCaptcha.Tests/Selenium.AntiCaptcha.Tests.csproj"
+        sed -i "s/\(<PackageReference Include=\"AntiCaptchaApi.Net\" Version=\"\)[^\"]*\"/\1$LATEST_ANTICAPTCHA\"/g" "$TESTS_CSPROJ"
+        sed -i "s/\(<PackageReference Include=\"Selenium.WebDriver\" Version=\"\)[^\"]*\"/\1$LATEST_WEBDRIVER\"/g" "$TESTS_CSPROJ"
+        echo "Updated $TESTS_CSPROJ"
+        
         # Add release note at the beginning of PackageReleaseNotes
         RELEASE_NOTE_PARTS="${{ steps.check_updates.outputs.release_note_parts }}"
         RELEASE_NOTE="$NEW_VERSION: Updated $RELEASE_NOTE_PARTS"
