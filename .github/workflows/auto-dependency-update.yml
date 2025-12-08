@@ -17,6 +17,11 @@ on:
         description: 'Specific version to update to (leave empty for latest)'
         required: false
         type: string
+      dry_run:
+        description: 'Dry run - check for updates without committing or tagging'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   update-dependencies:
@@ -43,13 +48,19 @@ jobs:
         if [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
           PACKAGE="${{ github.event.client_payload.package }}"
           VERSION="${{ github.event.client_payload.version }}"
+          DRY_RUN="false"
         else
           PACKAGE="${{ inputs.package }}"
           VERSION="${{ inputs.version }}"
+          DRY_RUN="${{ inputs.dry_run }}"
         fi
         echo "package=$PACKAGE" >> $GITHUB_OUTPUT
         echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "dry_run=$DRY_RUN" >> $GITHUB_OUTPUT
         echo "Updating package: $PACKAGE to version: ${VERSION:-latest}"
+        if [[ "$DRY_RUN" == "true" ]]; then
+          echo "🧪 DRY RUN MODE - No changes will be committed or tagged"
+        fi
 
     - name: Wait for NuGet package availability
       if: steps.determine_package.outputs.package != 'check-all'
@@ -94,16 +105,19 @@ jobs:
         # Extract current versions from csproj files
         ANTICAPTCHA_VERSION=$(grep '<PackageReference Include="AntiCaptchaApi.Net"' Selenium.AntiCaptcha/Selenium.AntiCaptcha.csproj | sed -E 's/.*Version="([^"]+)".*/\1/')
         FRAMESSEARCHER_VERSION=$(grep '<PackageReference Include="Selenium.FramesSearcher.Extensions"' Selenium.AntiCaptcha/Selenium.AntiCaptcha.csproj | sed -E 's/.*Version="([^"]+)".*/\1/')
+        WEBDRIVER_VERSION=$(grep '<PackageReference Include="Selenium.WebDriver"' Selenium.AntiCaptcha/Selenium.AntiCaptcha.csproj | sed -E 's/.*Version="([^"]+)".*/\1/')
         SELENIUM_ANTICAPTCHA_VERSION=$(grep '<Version>' Selenium.AntiCaptcha/Selenium.AntiCaptcha.csproj | head -1 | sed -E 's/.*<Version>([^<]+)<\/Version>.*/\1/')
         FRAMES_EXT_VERSION=$(grep '<Version>' Selenium.FramesSearcher.Extensions/Selenium.FramesSearcher.Extensions.csproj | head -1 | sed -E 's/.*<Version>([^<]+)<\/Version>.*/\1/')
         
         echo "Current AntiCaptchaApi.Net reference: $ANTICAPTCHA_VERSION"
         echo "Current Selenium.FramesSearcher.Extensions reference: $FRAMESSEARCHER_VERSION"
+        echo "Current Selenium.WebDriver reference: $WEBDRIVER_VERSION"
         echo "Current Selenium.AntiCaptcha version: $SELENIUM_ANTICAPTCHA_VERSION"
         echo "Current Selenium.FramesSearcher.Extensions version: $FRAMES_EXT_VERSION"
         
         echo "anticaptcha_ref=$ANTICAPTCHA_VERSION" >> $GITHUB_OUTPUT
         echo "framessearcher_ref=$FRAMESSEARCHER_VERSION" >> $GITHUB_OUTPUT
+        echo "webdriver_ref=$WEBDRIVER_VERSION" >> $GITHUB_OUTPUT
         echo "selenium_anticaptcha_ver=$SELENIUM_ANTICAPTCHA_VERSION" >> $GITHUB_OUTPUT
         echo "frames_ext_ver=$FRAMES_EXT_VERSION" >> $GITHUB_OUTPUT
 
@@ -131,6 +145,7 @@ jobs:
             LATEST_ANTICAPTCHA=$(get_latest_version "AntiCaptchaApi.Net")
           fi
           LATEST_FRAMESSEARCHER="${{ steps.current_versions.outputs.framessearcher_ref }}"
+          LATEST_WEBDRIVER="${{ steps.current_versions.outputs.webdriver_ref }}"
         elif [[ "$PACKAGE" == "Selenium.FramesSearcher.Extensions" ]]; then
           LATEST_ANTICAPTCHA="${{ steps.current_versions.outputs.anticaptcha_ref }}"
           if [[ -n "$VERSION" ]]; then
@@ -138,17 +153,21 @@ jobs:
           else
             LATEST_FRAMESSEARCHER=$(get_latest_version "Selenium.FramesSearcher.Extensions")
           fi
+          LATEST_WEBDRIVER=$(get_latest_version "Selenium.WebDriver")
         else
-          # check-all - get latest for both
+          # check-all - get latest for all
           LATEST_ANTICAPTCHA=$(get_latest_version "AntiCaptchaApi.Net")
           LATEST_FRAMESSEARCHER=$(get_latest_version "Selenium.FramesSearcher.Extensions")
+          LATEST_WEBDRIVER=$(get_latest_version "Selenium.WebDriver")
         fi
         
         echo "Latest AntiCaptchaApi.Net: $LATEST_ANTICAPTCHA"
         echo "Latest Selenium.FramesSearcher.Extensions: $LATEST_FRAMESSEARCHER"
+        echo "Latest Selenium.WebDriver: $LATEST_WEBDRIVER"
         
         echo "anticaptcha=$LATEST_ANTICAPTCHA" >> $GITHUB_OUTPUT
         echo "framessearcher=$LATEST_FRAMESSEARCHER" >> $GITHUB_OUTPUT
+        echo "webdriver=$LATEST_WEBDRIVER" >> $GITHUB_OUTPUT
 
     - name: Check for updates needed
       id: check_updates
@@ -156,15 +175,19 @@ jobs:
       run: |
         CURRENT_ANTICAPTCHA="${{ steps.current_versions.outputs.anticaptcha_ref }}"
         CURRENT_FRAMESSEARCHER="${{ steps.current_versions.outputs.framessearcher_ref }}"
+        CURRENT_WEBDRIVER="${{ steps.current_versions.outputs.webdriver_ref }}"
         LATEST_ANTICAPTCHA="${{ steps.latest_versions.outputs.anticaptcha }}"
         LATEST_FRAMESSEARCHER="${{ steps.latest_versions.outputs.framessearcher }}"
+        LATEST_WEBDRIVER="${{ steps.latest_versions.outputs.webdriver }}"
         
         UPDATES_NEEDED="false"
         UPDATE_SUMMARY=""
+        RELEASE_NOTE_PARTS=""
         
         if [[ "$CURRENT_ANTICAPTCHA" != "$LATEST_ANTICAPTCHA" ]]; then
           UPDATES_NEEDED="true"
           UPDATE_SUMMARY="AntiCaptchaApi.Net $CURRENT_ANTICAPTCHA → $LATEST_ANTICAPTCHA"
+          RELEASE_NOTE_PARTS="AntiCaptchaApi.Net to $LATEST_ANTICAPTCHA"
           echo "AntiCaptchaApi.Net needs update: $CURRENT_ANTICAPTCHA → $LATEST_ANTICAPTCHA"
         fi
         
@@ -172,14 +195,30 @@ jobs:
           UPDATES_NEEDED="true"
           if [[ -n "$UPDATE_SUMMARY" ]]; then
             UPDATE_SUMMARY="$UPDATE_SUMMARY, Selenium.FramesSearcher.Extensions $CURRENT_FRAMESSEARCHER → $LATEST_FRAMESSEARCHER"
+            RELEASE_NOTE_PARTS="$RELEASE_NOTE_PARTS, Selenium.FramesSearcher.Extensions to $LATEST_FRAMESSEARCHER"
           else
             UPDATE_SUMMARY="Selenium.FramesSearcher.Extensions $CURRENT_FRAMESSEARCHER → $LATEST_FRAMESSEARCHER"
+            RELEASE_NOTE_PARTS="Selenium.FramesSearcher.Extensions to $LATEST_FRAMESSEARCHER"
           fi
           echo "Selenium.FramesSearcher.Extensions needs update: $CURRENT_FRAMESSEARCHER → $LATEST_FRAMESSEARCHER"
         fi
         
+        if [[ "$CURRENT_WEBDRIVER" != "$LATEST_WEBDRIVER" ]]; then
+          UPDATES_NEEDED="true"
+          if [[ -n "$UPDATE_SUMMARY" ]]; then
+            UPDATE_SUMMARY="$UPDATE_SUMMARY, Selenium.WebDriver $CURRENT_WEBDRIVER → $LATEST_WEBDRIVER"
+            RELEASE_NOTE_PARTS="$RELEASE_NOTE_PARTS, Selenium.WebDriver to $LATEST_WEBDRIVER"
+          else
+            UPDATE_SUMMARY="Selenium.WebDriver $CURRENT_WEBDRIVER → $LATEST_WEBDRIVER"
+            RELEASE_NOTE_PARTS="Selenium.WebDriver to $LATEST_WEBDRIVER"
+          fi
+          echo "Selenium.WebDriver needs update: $CURRENT_WEBDRIVER → $LATEST_WEBDRIVER"
+        fi
+        
         echo "updates_needed=$UPDATES_NEEDED" >> $GITHUB_OUTPUT
         echo "update_summary=$UPDATE_SUMMARY" >> $GITHUB_OUTPUT
+        echo "release_note_parts=$RELEASE_NOTE_PARTS" >> $GITHUB_OUTPUT
+        echo "latest_webdriver=$LATEST_WEBDRIVER" >> $GITHUB_OUTPUT
 
     - name: Calculate new version
       if: steps.check_updates.outputs.updates_needed == 'true'
@@ -204,6 +243,7 @@ jobs:
         NEW_VERSION="${{ steps.new_version.outputs.new_version }}"
         LATEST_ANTICAPTCHA="${{ steps.latest_versions.outputs.anticaptcha }}"
         LATEST_FRAMESSEARCHER="${{ steps.latest_versions.outputs.framessearcher }}"
+        LATEST_WEBDRIVER="${{ steps.latest_versions.outputs.webdriver }}"
         UPDATE_SUMMARY="${{ steps.check_updates.outputs.update_summary }}"
         
         # Update Version and PackageVersion
@@ -213,9 +253,11 @@ jobs:
         # Update package references
         sed -i "s/\(<PackageReference Include=\"AntiCaptchaApi.Net\" Version=\"\)[^\"]*\"/\1$LATEST_ANTICAPTCHA\"/g" "$CSPROJ_FILE"
         sed -i "s/\(<PackageReference Include=\"Selenium.FramesSearcher.Extensions\" Version=\"\)[^\"]*\"/\1$LATEST_FRAMESSEARCHER\"/g" "$CSPROJ_FILE"
+        sed -i "s/\(<PackageReference Include=\"Selenium.WebDriver\" Version=\"\)[^\"]*\"/\1$LATEST_WEBDRIVER\"/g" "$CSPROJ_FILE"
         
         # Add release note at the beginning of PackageReleaseNotes
-        RELEASE_NOTE="$NEW_VERSION: Updated $UPDATE_SUMMARY"
+        RELEASE_NOTE_PARTS="${{ steps.check_updates.outputs.release_note_parts }}"
+        RELEASE_NOTE="$NEW_VERSION: Updated $RELEASE_NOTE_PARTS"
         sed -i "s/<PackageReleaseNotes>/<PackageReleaseNotes>\n      $RELEASE_NOTE/" "$CSPROJ_FILE"
         
         echo "Updated $CSPROJ_FILE"
@@ -228,7 +270,7 @@ jobs:
         dotnet build Selenium.AntiCaptcha.sln --configuration Release
 
     - name: Commit and push changes
-      if: steps.check_updates.outputs.updates_needed == 'true'
+      if: steps.check_updates.outputs.updates_needed == 'true' && steps.determine_package.outputs.dry_run != 'true'
       shell: bash
       run: |
         NEW_VERSION="${{ steps.new_version.outputs.new_version }}"
@@ -245,7 +287,7 @@ jobs:
         git push origin main
 
     - name: Create and push release tag
-      if: steps.check_updates.outputs.updates_needed == 'true'
+      if: steps.check_updates.outputs.updates_needed == 'true' && steps.determine_package.outputs.dry_run != 'true'
       shell: bash
       run: |
         NEW_VERSION="${{ steps.new_version.outputs.new_version }}"
@@ -260,8 +302,13 @@ jobs:
     - name: Summary
       shell: bash
       run: |
+        DRY_RUN="${{ steps.determine_package.outputs.dry_run }}"
         if [[ "${{ steps.check_updates.outputs.updates_needed }}" == "true" ]]; then
-          echo "## ✅ Dependency Update Complete" >> $GITHUB_STEP_SUMMARY
+          if [[ "$DRY_RUN" == "true" ]]; then
+            echo "## 🧪 Dry Run - Updates Available" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## ✅ Dependency Update Complete" >> $GITHUB_STEP_SUMMARY
+          fi
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Updates applied:** ${{ steps.check_updates.outputs.update_summary }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -269,7 +316,13 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Tag created:** anticaptcha-v${{ steps.new_version.outputs.new_version }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "The publish workflow will now build and publish to NuGet.org." >> $GITHUB_STEP_SUMMARY
+          if [[ "$DRY_RUN" == "true" ]]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ **DRY RUN** - No changes were committed or tagged." >> $GITHUB_STEP_SUMMARY
+            echo "Run again without dry_run to apply changes." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "The publish workflow will now build and publish to NuGet.org." >> $GITHUB_STEP_SUMMARY
+          fi
         else
           echo "## ℹ️ No Updates Needed" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
