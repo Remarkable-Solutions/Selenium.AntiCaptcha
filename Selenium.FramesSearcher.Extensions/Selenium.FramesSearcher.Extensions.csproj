@@ -4,7 +4,7 @@
         <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <Version>1.8.9</Version>
+        <Version>1.8.10</Version>
         <Authors>RemarkableSolutions</Authors>
         <PackageProjectUrl>https://github.com/RemarkableSolutionsAdmin/Selenium.AntiCaptcha</PackageProjectUrl>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -18,8 +18,9 @@
         <PublishRepositoryUrl>True</PublishRepositoryUrl>
         <IncludeSymbols>True</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-        <PackageVersion>1.8.9</PackageVersion>
+        <PackageVersion>1.8.10</PackageVersion>
         <PackageReleaseNotes>
+            1.8.10: Updated Selenium.WebDriver to 4.42.0
             1.8.9: Updated Selenium.WebDriver to 4.41.0
             1.8.8: Updated Selenium.WebDriver to 4.40.0
             1.8.7: Updated Selenium.WebDriver to 4.39.0
@@ -31,7 +32,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Selenium.WebDriver" Version="4.41.0" />
+        <PackageReference Include="Selenium.WebDriver" Version="4.42.0" />
     </ItemGroup>
 
 </Project>
