@@ -3,7 +3,7 @@
     <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Version>2.1.17</Version>
+    <Version>2.1.18</Version>
     <Authors>RemarkableSolutions</Authors>
     <PackageProjectUrl>https://github.com/RemarkableSolutionsAdmin/Selenium.AntiCaptcha</PackageProjectUrl>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -17,9 +17,10 @@
     <PublishRepositoryUrl>True</PublishRepositoryUrl>
     <IncludeSymbols>True</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <PackageVersion>2.1.17</PackageVersion>
+    <PackageVersion>2.1.18</PackageVersion>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageReleaseNotes>
+      2.1.18: Updated AntiCaptchaApi.Net to 2.1.12
       2.1.17: Updated Selenium.FramesSearcher.Extensions to 1.8.11, Selenium.WebDriver to 4.43.0
       2.1.16: Updated Selenium.FramesSearcher.Extensions to 1.8.10, Selenium.WebDriver to 4.42.0
       2.1.15: Updated AntiCaptchaApi.Net to 2.1.11
@@ -48,7 +49,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="AntiCaptchaApi.Net" Version="2.1.11" />
+    <PackageReference Include="AntiCaptchaApi.Net" Version="2.1.12" />
     <PackageReference Include="Selenium.FramesSearcher.Extensions" Version="1.8.11" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="Selenium.WebDriver" Version="4.43.0" />
